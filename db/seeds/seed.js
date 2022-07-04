@@ -33,6 +33,7 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
 
   await Promise.all([topicsPromise, usersPromise]);
 
+
   const formattedArticleData = articleData.map(convertTimestampToDate);
   const insertArticlesQueryStr = format(
     "INSERT INTO articles (title, topic, author, body, created_at, votes) VALUES %L RETURNING *;",
@@ -48,13 +49,17 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
     )
   );
 
+  
+
   const articleRows = await db
     .query(insertArticlesQueryStr)
     .then((result) => result.rows);
 
+   
   const articleIdLookup = createRef(articleRows, "title", "article_id");
   const formattedCommentData = formatComments(commentData, articleIdLookup);
 
+ 
   const insertCommentsQueryStr = format(
     "INSERT INTO comments (body, author, article_id, votes, created_at) VALUES %L RETURNING *;",
     formattedCommentData.map(
@@ -67,6 +72,8 @@ const seed = async ({ topicData, userData, articleData, commentData }) => {
       ]
     )
   );
+
+  
   return db.query(insertCommentsQueryStr).then((result) => result.rows);
 };
 
