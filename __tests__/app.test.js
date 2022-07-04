@@ -1,10 +1,10 @@
 const app= require('../app.js');
 const request=require('supertest')
 const db= require('../db/connection.js')
+const testData=require('../db/data/test-data/index.js');
+const seed=require('../db/seeds/seed');
 
 beforeAll(()=>{
-    const testData=require('../db/data/test-data/index.js');
-    const seed=require('../db/seeds/seed');
     return seed(testData);
 });
 
@@ -19,14 +19,14 @@ describe('Express app',() => {
     });
     it('GET /api/topics returns an array',() => {
         return request(app).get('/api/topics').expect(200).then(({body}) =>{
-            expect(Array.isArray(body)).toBe(true);
-            expect(body.length > 0).toBe(true);
+            expect(Array.isArray(body.topics)).toBe(true);
+            expect(body.topics.length > 0).toBe(true);
         })
     });
    
     it('GET /api/topics returns topic objects',() => {
         return request(app).get('/api/topics').expect(200).then(({body}) =>{
-            body.forEach(topic=>{
+            body.topics.forEach(topic=>{
                 expect(topic).toEqual(expect.objectContaining({
                     description:expect.any(String),
                     slug:expect.any(String),
@@ -34,5 +34,15 @@ describe('Express app',() => {
             });
         });
     });
+
+    // it('204: GET /api/topics when topics is empty',() => {
+    //     return db.query('DELETE FROM comments').then(()=>{
+    //         return db.query('DELETE FROM articles');
+    //     }).then(() => {
+    //         return db.query('DELETE FROM topics')
+    //     }).then(() => {
+    //         return request(app).get('/api/topics').expect(204);
+    //     });
+    // });
    });
 });
