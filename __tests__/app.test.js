@@ -45,4 +45,38 @@ describe('Express app',() => {
     //     });
     // });
    });
+
+   describe.only('/api/articles/:article_id',() => {
+        it('200: /api/articles/1',() => {
+            return request(app).get('/api/articles/1').expect(200)
+        });
+
+        it('/api/articles/1 returns the article object with article_id=1',() => {
+            return request(app).get('/api/articles/1').expect(200).then(({body:{article}})=>{
+                expect(article).toEqual(expect.objectContaining({
+                    article_id:1,
+                    author:expect.any(String),
+                    title:expect.any(String),
+                    body:expect.any(String),
+                    topic:expect.any(String),
+                    created_at:expect.any(String),
+                    votes:expect.any(Number)
+                }));
+            });
+        });
+
+        it('404: /api/articles/34567 returns {article:{}}',() => {
+            return request(app).get('/api/articles/34567').expect(404).then(({body})=>{
+                expect(body).toEqual({article:{}})
+            });
+        });
+
+        it('400: /api/articles/abc returns {msg:"Invalid article_id"}',() => {
+            return request(app).get('/api/articles/abc').expect(400).then(({body})=>{
+                expect(body).toEqual({msg:"Invalid article_id"});
+            });
+        });
+
+
+    });
 });
