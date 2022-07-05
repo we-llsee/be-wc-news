@@ -51,15 +51,17 @@ describe('Express app',() => {
             return request(app).get('/api/articles/1').expect(200)
         });
 
-        it('/api/articles/1 returns an article object',() => {
+        it('/api/articles/1 returns the article object with article_id=1',() => {
             return request(app).get('/api/articles/1').expect(200).then(({body:{article}})=>{
-                expect(article).toHaveProperty('author');
-                expect(article).toHaveProperty('title');
-                expect(article).toHaveProperty('article_id');
-                expect(article).toHaveProperty('body');
-                expect(article).toHaveProperty('topic');
-                expect(article).toHaveProperty('created_at');
-                expect(article).toHaveProperty('votes');
+                expect(article).toEqual(expect.objectContaining({
+                    article_id:1,
+                    author:expect.any(String),
+                    title:expect.any(String),
+                    body:expect.any(String),
+                    topic:expect.any(String),
+                    created_at:expect.any(String),
+                    votes:expect.any(Number)
+                }));
             });
         });
 
