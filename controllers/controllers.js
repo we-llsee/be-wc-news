@@ -22,3 +22,18 @@ exports.getArticleById=(req,res,next) => {
     });
 
 };
+
+exports.patchArticleById=(req,res,next) =>{
+
+    const {article_id} =req.params;
+    const {inc_votes} = req.query;
+
+    if(req.query.keys.length>1 || Number.isNaN(+inc_votes)) {
+        next({status:400, msg:'Invalid PATCH body'})
+        return ;
+    }
+
+    return models.updateArticleById(inc_votes,article_id).then(({rows:[article]})=>{
+        return res.status(200).send({article});
+    });
+}

@@ -1,4 +1,5 @@
 const app= require('../app.js');
+const apiRouter=require('../api-router')
 const request=require('supertest')
 const db= require('../db/connection.js')
 const testData=require('../db/data/test-data/index.js');
@@ -13,7 +14,7 @@ afterAll(()=>{
 });
 
 describe('Express app',() => {
-   describe('/api/topics',() => {
+   describe('GET /api/topics',() => {
     it('200: GET /api/topics',() => {
        return request(app).get('/api/topics').expect(200);
     });
@@ -46,7 +47,7 @@ describe('Express app',() => {
     // });
    });
 
-   describe.only('/api/articles/:article_id',() => {
+   describe('GET /api/articles/:article_id',() => {
         it('200: /api/articles/1',() => {
             return request(app).get('/api/articles/1').expect(200)
         });
@@ -61,7 +62,7 @@ describe('Express app',() => {
                     topic:expect.any(String),
                     created_at:expect.any(String),
                     votes:expect.any(Number)
-                }));
+                }));    
             });
         });
 
@@ -78,5 +79,48 @@ describe('Express app',() => {
         });
 
 
+    });
+
+    describe.only('PATCH /api/articles/:article_id',() => {
+        it('200 /api/articles/1 article_id exists',() => {
+            return request(app).patch('/api/articles/1').query({inc_votes:1}).expect(200);
+        });
+
+        it('/api/articles/1 returns the article with article_id=1',() => {
+            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:1});
+            const getPromise=request(app).get('/api/articles/1');
+
+            return Promise.all([patchPromise,getPromise]).then(([patchResult,getResult])=>{
+                expect(patchResult.body).toEqual(getResult.body);
+            });
+        });
+
+        it('/api/articles/1 returns article 1, updated as per the PATCH body',() => {
+            const getPromise=request(app).get('/api/articles/1');
+            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:1});
+
+            return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
+                expect(patchResult.body.article.votes).toBe(getResult.body.article.votes + 1);
+            });
+        });
+
+        it('200: Empty PATCH body returns the unaltered article',() => {
+            const getPromise=request(app).get('/api/articles/1');
+            const patchPromise=request(app).patch('/api/articles/1');
+
+            return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
+                expect(patchResult.body).toEqual(getResult.body);
+            });
+        });
+
+        it.only('200: Empty PATCH body returns the unaltered article',() => {
+            const getPromise=request(app).get('/api/articles/1');
+            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:2,cheese:'cheese'});
+
+            return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
+                console.log('test')
+                //expect(patchResult.body).toEqual(getResult.body);
+            });
+        });
     });
 });
