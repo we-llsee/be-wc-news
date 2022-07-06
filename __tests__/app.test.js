@@ -82,11 +82,11 @@ describe('Express app',() => {
     });
 
     describe.only('PATCH /api/articles/:article_id',() => {
-        it('200 /api/articles/1 article_id exists',() => {
+        it('200: /api/articles/1 when article_id exists',() => {
             return request(app).patch('/api/articles/1').query({inc_votes:1}).expect(200);
         });
 
-        it('/api/articles/1 returns the article with article_id=1',() => {
+        it('200: /api/articles/1 returns the article with article_id=1',() => {
             const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:1});
             const getPromise=request(app).get('/api/articles/1');
 
@@ -95,32 +95,58 @@ describe('Express app',() => {
             });
         });
 
-        it('/api/articles/1 returns article 1, updated as per the PATCH body',() => {
+        it('200: /api/articles/1 returns article 1, updated as per the PATCH body',() => {
             const getPromise=request(app).get('/api/articles/1');
-            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:1});
+            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:10});
 
             return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
-                expect(patchResult.body.article.votes).toBe(getResult.body.article.votes + 1);
+                expect(patchResult.body.article.votes).toBe(getResult.body.article.votes + 10);
             });
         });
 
-        it('200: Empty PATCH body returns the unaltered article',() => {
+        it('200: inc_votes in the PATCH body is a negative number',() => {
             const getPromise=request(app).get('/api/articles/1');
-            const patchPromise=request(app).patch('/api/articles/1');
+            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:-30});
 
             return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
-                expect(patchResult.body).toEqual(getResult.body);
+                expect(patchResult.body.article.votes).toBe(getResult.body.article.votes -30);
             });
         });
 
-        it.only('200: Empty PATCH body returns the unaltered article',() => {
-            const getPromise=request(app).get('/api/articles/1');
-            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:2,cheese:'cheese'});
-
-            return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
-                console.log('test')
-                //expect(patchResult.body).toEqual(getResult.body);
-            });
+        it('400: Empty PATCH body returns an "Invalid PATCH body" error',() => {
+            return request(app).patch('/api/articles/1').expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid PATCH body'});
+            })
         });
+
+        it('400: Extra fields in PATCH body returns "Invalid PATCH body" error',() => {
+            return request(app).patch('/api/articles/1').query({inc_votes:10,body:'Removed'}).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid PATCH body'});
+            })
+        });
+
+        it('400: inc_votes key in PATCH body has an invalid value',() => {
+            return request(app).patch('/api/articles/1').query({inc_votes:'cat'}).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid PATCH body'});
+            })
+        });
+
+        it('400: inc_votes key in PATCH body has no value',() => {
+            return request(app).patch('/api/articles/1').query({inc_votes:'cheese'}).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid PATCH body'});
+            })
+        })
+        
+        it('400: invalid article_id',() => {
+            return request(app).patch('/api/articles/x').query({inc_votes:1}).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid article_id'});
+            })
+        })
+        
+        it('404: non-existant article_id',() => {
+            return request(app).patch('/api/articles/4566').query({inc_votes:1}).expect(404).then(({body})=>{
+                expect(body).toEqual({msg:'Non-existent article_id'});
+            })
+        })
     });
 });

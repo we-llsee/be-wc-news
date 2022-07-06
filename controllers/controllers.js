@@ -24,16 +24,23 @@ exports.getArticleById=(req,res,next) => {
 };
 
 exports.patchArticleById=(req,res,next) =>{
-
+    
     const {article_id} =req.params;
     const {inc_votes} = req.query;
 
-    if(req.query.keys.length>1 || Number.isNaN(+inc_votes)) {
-        next({status:400, msg:'Invalid PATCH body'})
+    if(Number.isNaN(+article_id)){
+        next({status:400, msg:'Invalid article_id'})
         return ;
     }
 
-    return models.updateArticleById(inc_votes,article_id).then(({rows:[article]})=>{
-        return res.status(200).send({article});
-    });
+    //Using && short-circuit to avoid .length of undefined
+    if(typeof req.query==='object' && Array.isArray(req.query)===false &&
+    Object.keys(req.query).length===1 && Number.isInteger(+inc_votes)){
+        return models.updateArticleById(inc_votes,article_id).then(({rows:[article]})=>{
+            return res.status(200).send({article});
+        }).catch((err) => next(err))
+    } else {
+        next({status:400, msg:'Invalid PATCH body'})
+    }
+    
 }
