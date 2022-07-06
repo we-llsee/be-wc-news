@@ -97,8 +97,18 @@ describe('Express app',() => {
             })
         });
 
-        it('200: when user table is empty returns {users:[]}',() => {
-        
+        it('200: when user table is empty returns: {users:[]}',() => {
+            return db.query('DELETE FROM comments').then(()=>{
+                return db.query('DELETE FROM articles');
+            }).then(() => {
+                return db.query('DELETE FROM users')
+            }).then(() => {
+                return request(app).get('/api/users').expect(200)
+            }).then(data => {
+                return expect(data.body).toEqual({users:[]})
+            }).then(()=>{
+                return seed(testData);
+            })
         });
     });
 
