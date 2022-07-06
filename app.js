@@ -2,11 +2,14 @@ const express=require('express');
 const app = express();
 const controllers = require('./controllers/controllers.js');
 
-app.get('/api/topics',controllers.getTopics);
+// const apiRouter= require('./api-router')
+// app.use('/api',apiRouter);
 
+app.get('/api/topics',controllers.getTopics);
 app.get('/api/articles/:article_id',controllers.getArticleById);
 
 app.get('/api/users',controllers.getUsers);
+app.patch('/api/articles/:article_id',controllers.patchArticleById);
 
 app.use((err,req,res,next)=>{
     if(err.status && err.msg){
