@@ -6,6 +6,8 @@ app.get('/api/topics',controllers.getTopics);
 
 app.get('/api/articles/:article_id',controllers.getArticleById);
 
+app.get('/api/users',controllers.getUsers);
+
 app.use((err,req,res,next)=>{
     if(err.status && err.msg){
         return res.status(err.status).send({msg:err.msg});

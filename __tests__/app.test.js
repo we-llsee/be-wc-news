@@ -46,7 +46,7 @@ describe('Express app',() => {
     // });
    });
 
-   describe.only('/api/articles/:article_id',() => {
+   describe('/api/articles/:article_id',() => {
         it('200: /api/articles/1',() => {
             return request(app).get('/api/articles/1').expect(200)
         });
@@ -78,5 +78,28 @@ describe('Express app',() => {
         });
 
 
+    });
+
+    describe.only('GET /api/users',() => {
+        it('200: GET /api/users',() => {
+            return request(app).get('/api/users').expect(200);
+        });
+
+        it('200: returns array of user objects',() => {
+           return request(app).get('/api/users').expect(200).then(({body:{users}})=>{
+                expect(users.length>0).toBe(true);    
+                users.forEach(user =>{
+                    expect(user).toEqual(expect.objectContaining({
+                        username:expect.any(String),
+                        name:expect.any(String),
+                        avatar_url:expect.any(String)
+                    }))
+                })
+            })
+        });
+
+        it('200: when user table is empty returns {users:[]}',() => {
+        
+        });
     });
 });
