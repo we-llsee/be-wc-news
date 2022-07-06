@@ -81,7 +81,7 @@ describe('Express app',() => {
 
     });
 
-    describe.only('PATCH /api/articles/:article_id',() => {
+    describe('PATCH /api/articles/:article_id',() => {
         it('200: /api/articles/1 when article_id exists',() => {
             return request(app).patch('/api/articles/1').query({inc_votes:1}).expect(200);
         });
@@ -119,12 +119,6 @@ describe('Express app',() => {
             })
         });
 
-        it('400: Extra fields in PATCH body returns "Invalid PATCH body" error',() => {
-            return request(app).patch('/api/articles/1').query({inc_votes:10,body:'Removed'}).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid PATCH body'});
-            })
-        });
-
         it('400: inc_votes key in PATCH body has an invalid value',() => {
             return request(app).patch('/api/articles/1').query({inc_votes:'cat'}).expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid PATCH body'});
@@ -132,7 +126,7 @@ describe('Express app',() => {
         });
 
         it('400: inc_votes key in PATCH body has no value',() => {
-            return request(app).patch('/api/articles/1').query({inc_votes:'cheese'}).expect(400).then(({body})=>{
+            return request(app).patch('/api/articles/1').query({inc_votes:undefined}).expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid PATCH body'});
             })
         })
