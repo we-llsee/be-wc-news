@@ -18,14 +18,14 @@ describe('Express app',() => {
     it('200: GET /api/topics',() => {
        return request(app).get('/api/topics').expect(200);
     });
-    it('GET /api/topics returns an array',() => {
+    it('200: /api/topics returns an array',() => {
         return request(app).get('/api/topics').expect(200).then(({body}) =>{
             expect(Array.isArray(body.topics)).toBe(true);
             expect(body.topics.length > 0).toBe(true);
         })
     });
    
-    it('GET /api/topics returns topic objects',() => {
+    it('200: /api/topics returns topic objects',() => {
         return request(app).get('/api/topics').expect(200).then(({body}) =>{
             body.topics.forEach(topic=>{
                 expect(topic).toEqual(expect.objectContaining({
@@ -47,12 +47,12 @@ describe('Express app',() => {
     // });
    });
 
-   describe('GET /api/articles/:article_id',() => {
+   describe.only('GET /api/articles/:article_id',() => {
         it('200: /api/articles/1',() => {
             return request(app).get('/api/articles/1').expect(200)
         });
 
-        it('/api/articles/1 returns the article object with article_id=1',() => {
+        it('200: /api/articles/1 returns the article object with article_id=1',() => {
             return request(app).get('/api/articles/1').expect(200).then(({body:{article}})=>{
                 expect(article).toEqual(expect.objectContaining({
                     article_id:1,
@@ -66,10 +66,11 @@ describe('Express app',() => {
             });
         });
 
-        it('404: /api/articles/34567 returns {article:{}}',() => {
-            return request(app).get('/api/articles/34567').expect(404).then(({body})=>{
-                expect(body).toEqual({article:{}})
-            });
+       it('200: returns an article object with a comment_count key',() => {
+            return request(app).get('/api/articles/1').then(({body})=>{
+                expect(body.article).toHaveProperty('author');
+                expect(body.article).toHaveProperty('comment_count');
+            })
         });
 
         it('400: /api/articles/abc returns {msg:"Invalid article_id"}',() => {
@@ -78,7 +79,12 @@ describe('Express app',() => {
             });
         });
 
-
+        it('404: /api/articles/34567',() => {
+            return request(app).get('/api/articles/34567').expect(404).then(({body})=>{
+                expect(body).toEqual({msg:'Non-existent article_id'})
+       
+            });
+        });
     });
 
     describe('PATCH /api/articles/:article_id',() => {

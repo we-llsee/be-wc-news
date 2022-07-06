@@ -11,6 +11,7 @@ app.get('/api/articles/:article_id',controllers.getArticleById);
 app.patch('/api/articles/:article_id',controllers.patchArticleById);
 
 app.use((err,req,res,next)=>{
+
     if(err.status && err.msg){
         return res.status(err.status).send({msg:err.msg});
     } else {
