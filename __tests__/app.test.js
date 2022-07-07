@@ -202,6 +202,7 @@ describe('Express app',() => {
 
         it('200: /api/articles/1/comments returns an array of "comment" objects',() => {
             return request(app).get('/api/articles/1/comments').expect(200).then(({body}) => {
+                expect(body.comments.length).toBe(11);
                 body.comments.forEach(comment=>{
                     expect(comment).toEqual(expect.objectContaining({
                         comment_id:expect.any(Number),
@@ -211,12 +212,6 @@ describe('Express app',() => {
                         body:expect.any(String)
                     }))
                 })
-            });
-        });
-
-        it('200: /api/articles/1/comments returns an array of length 11',() => {
-            return request(app).get('/api/articles/1/comments').expect(200).then(({body}) => {
-                return expect(body.comments.length).toBe(11);
             });
         });
 
