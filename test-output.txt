@@ -1,0 +1,6 @@
+You are now connected to database "wc_news_test" as user "postgres".
+ article_id |                title                | topic |    author     |               body                |     created_at      | votes | comment_count 
+------------+-------------------------------------+-------+---------------+-----------------------------------+---------------------+-------+---------------
+          1 | Living in the shadow of a great man | mitch | butter_bridge | I find this existence challenging | 2020-07-09 21:11:00 |   100 |            11
+(1 row)
+

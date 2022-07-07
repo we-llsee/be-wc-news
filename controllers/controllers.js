@@ -9,15 +9,14 @@ exports.getTopics =(req,res) => {
 exports.getArticleById=(req,res,next) => {
     const {article_id} =req.params;
 
-    if(Number.isNaN(+article_id)){
-        next({status:400, msg:'Invalid article_id'})
-        return ;
-    }
+    models.fetchArticleById(article_id)
+    .then((article)=>{    
+        article[0].comment_count = +article[0].comment_count
+        return res.status(200).send({article:article[0]});
+    }).catch((err)=>{
+        next(err);
+    })
 
-    return models.fetchArticleById(article_id).then(({rowCount,rows:[article]})=>{    
-        if(rowCount===0) return res.status(404).send({'article':{}});
-        return res.status(200).send({article});
-    });
 };
 
 exports.patchArticleById=(req,res,next) =>{
@@ -37,6 +36,7 @@ exports.patchArticleById=(req,res,next) =>{
     }).then(({rows:[article]})=>{
         return res.status(200).send({article});
     }).catch((err) => next(err))
+   
 }
 
 exports.getUsers=(req,res,next) => {

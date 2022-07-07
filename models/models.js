@@ -8,7 +8,22 @@ exports.fetchTopics=() =>{
 };
 
 exports.fetchArticleById = (article_id) => {
-    return db.query('SELECT * FROM articles WHERE article_id=$1',[article_id]);
+
+    if(Number.isNaN(+article_id)){
+        return Promise.reject({status:400, msg:'Invalid article_id'})
+    }
+
+    const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
+    LEFT JOIN comments 
+    ON articles.article_id=comments.article_id
+    WHERE articles.article_id=%L
+    GROUP BY articles.article_id`,[[article_id]]);
+
+    return db.query(formattedQuery).then(({rowCount,rows})=> {
+        if(rowCount===0) return Promise.reject({status:404,msg:'Non-existent article_id'});
+        return rows
+    });
+
 }
 
 exports.fetchUsers = ()=>{
