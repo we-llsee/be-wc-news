@@ -21,7 +21,7 @@ exports.getArticleById=(req,res,next) => {
 
 exports.patchArticleById=(req,res,next) =>{
     const {article_id} =req.params;
-    const {inc_votes} = req.query;
+    const {inc_votes} = req.body;
     
     return Promise.resolve().then(()=>{
         if(Number.isNaN(+article_id)){
@@ -61,6 +61,7 @@ exports.getArticles=(req,res,next) => {
 
 exports.postCommentByArticleId=(req,res,next)=>{
     const {article_id} =req.params;
+    const comment= req.body;
 
-    console.log(res.body);
+    res.status(200).send({comment})
 }

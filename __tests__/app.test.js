@@ -132,14 +132,14 @@ describe('Express app',() => {
 
     describe('PATCH /api/articles/:article_id',() => {
         it('200: /api/articles/1 when article_id exists',() => {
-            return request(app).patch('/api/articles/1').query({inc_votes:1}).expect(200);
+            return request(app).patch('/api/articles/1').send({inc_votes:1}).expect(200);
         });
 
         it('200: /api/articles/1 returns the article with article_id=1',() => {
             let patchResult;
             let getResult;
 
-           return request(app).patch('/api/articles/1').query({inc_votes:1}).then(({body})=>{
+           return request(app).patch('/api/articles/1').send({inc_votes:1}).then(({body})=>{
                 patchResult=body;
                 return request(app).get('/api/articles/1');
             }).then(({body})=>{
@@ -154,7 +154,7 @@ describe('Express app',() => {
 
             return request(app).get('/api/articles/1').then(({body})=>{
                 getResult=body;
-                return request(app).patch('/api/articles/1').query({inc_votes:10});
+                return request(app).patch('/api/articles/1').send({inc_votes:10});
             }).then(({body})=>{
                 patchResult=body;
                 return expect(patchResult.article.votes).toBe(getResult.article.votes + 10);
@@ -167,7 +167,7 @@ describe('Express app',() => {
 
             return request(app).get('/api/articles/1').then(({body})=>{
                 getResult=body;
-                return request(app).patch('/api/articles/1').query({inc_votes:-30});
+                return request(app).patch('/api/articles/1').send({inc_votes:-30});
             }).then(({body})=>{
                 patchResult=body;
                 return expect(patchResult.article.votes).toBe(getResult.article.votes -30);
@@ -181,31 +181,31 @@ describe('Express app',() => {
         });
 
         it('400: inc_votes key in PATCH body has an invalid value',() => {
-            return request(app).patch('/api/articles/1').query({inc_votes:'cat'}).expect(400).then(({body})=>{
+            return request(app).patch('/api/articles/1').send({inc_votes:'cat'}).expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid PATCH body'});
             })
         });
 
         it('400: inc_votes key in PATCH body has no value',() => {
-            return request(app).patch('/api/articles/1').query({inc_votes:undefined}).expect(400).then(({body})=>{
+            return request(app).patch('/api/articles/1').send({inc_votes:undefined}).expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid PATCH body'});
             })
         })
         
         it('400: invalid article_id',() => {
-            return request(app).patch('/api/articles/x').query({inc_votes:1}).expect(400).then(({body})=>{
+            return request(app).patch('/api/articles/x').send({inc_votes:1}).expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid article_id'});
             })
         })
         
         it('404: non-existant article_id',() => {
-            return request(app).patch('/api/articles/4566').query({inc_votes:1}).expect(404).then(({body})=>{
+            return request(app).patch('/api/articles/4566').send({inc_votes:1}).expect(404).then(({body})=>{
                 expect(body).toEqual({msg:'Non-existent article_id'});
             })
         })
     });
 
-    describe.only('GET /api/articles/__article_id/comments',() => {
+    describe('GET /api/articles/__article_id/comments',() => {
         it('200: /api/articles/1/comments returns {comments:[someArray]}',() => {
             return request(app).get('/api/articles/1/comments').expect(200).then(({body}) => {
                 expect(body).toEqual({comments:expect.any(Array)})
@@ -297,17 +297,17 @@ describe('Express app',() => {
     });
 
     describe.only('POST /api/articles/__article_id/comments',() => {
-        // it('200: /api/articles/1/comments returns the posted content',() => {
-        //     let postContent={
-        //         body:'testingtesting',
-        //         votes:1,
-        //         author:"butter_bridge",
-        //     }
+        it('200: /api/articles/1/comments returns the posted content',() => {
+            let postContent={
+                body:'testingtesting',
+                votes:1,
+                author:"butter_bridge",
+            }
 
-        //     return request(app).post('/api/articles/1/comments').send(postContent).then(({body})=>{
-        //         return expect(body).toEqual(postContent);
-        //     })
-        // });
+            return request(app).post('/api/articles/1/comments').send(postContent).then(({body})=>{
+                expect(body).toEqual({comment:postContent});
+            })
+        });
     });
 });
 

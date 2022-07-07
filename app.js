@@ -5,6 +5,8 @@ const controllers = require('./controllers/controllers.js');
 // const apiRouter= require('./api-router')
 // app.use('/api',apiRouter);
 
+app.use(express.json());
+
 app.get('/api/topics',controllers.getTopics);
 app.get('/api/articles/:article_id',controllers.getArticleById);
 app.get('/api/users',controllers.getUsers);
