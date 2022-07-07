@@ -233,14 +233,14 @@ describe('Express app',() => {
             })
         });
 
-        // it('404: /api/articles/66666/comments returns {msg:Invalid article_id}',() => {
-        //     return request(app).get('/api/articles/66666/comments').expect(404).then(({body})=>{
-        //         return expect(body).toEqual({msg:'Non-existent article_id'})
-        //     })
-        // });
+        it('404: /api/articles/66666/comments returns {msg:Invalid article_id}',() => {
+            return request(app).get('/api/articles/66666/comments').expect(404).then(({body})=>{
+                return expect(body).toEqual({msg:'Non-existent article_id'})
+            })
+        });
     });
     
-    describe.only('GET /api/articles',() => {
+    describe('GET /api/articles',() => {
         it('200: /api/articles returns an array on a key of "articles"',() => {
             return request(app).get('/api/articles').expect(200).then(({body})=>{
                 expect(body).toEqual({articles:expect.any(Array)});

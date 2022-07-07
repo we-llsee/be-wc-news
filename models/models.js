@@ -41,10 +41,6 @@ exports.updateArticleById = (inc_votes,article_id) => {
 
 exports.fetchCommentsByArticleId=(article_id)=>{
 
-    if(Number.isNaN(+article_id)){ 
-        return Promise.reject({status:400,msg:'Invalid article_id'})
-    }
-
     return this.fetchArticleById(article_id).then(()=>{
         return db.query('SELECT * FROM comments WHERE comments.article_id=$1',[article_id])
     .then(({rows})=> {
