@@ -86,7 +86,7 @@ describe('Express app',() => {
 
         it('200: returns array of user objects',() => {
            return request(app).get('/api/users').expect(200).then(({body:{users}})=>{
-                expect(users.length>0).toBe(true);    
+                expect(users.length===4).toBe(true);    
                 users.forEach(user =>{
                     expect(user).toEqual(expect.objectContaining({
                         username:expect.any(String),

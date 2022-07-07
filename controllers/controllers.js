@@ -40,7 +40,7 @@ exports.patchArticleById=(req,res,next) =>{
 }
 
 exports.getUsers=(req,res,next) => {
-    return models.fetchUsers().then((users)=> {
+    models.fetchUsers().then((users)=> {
         return res.status(200).send({users})
     });
 }
