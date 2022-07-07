@@ -31,5 +31,11 @@ exports.fetchArticles=()=>{
     GROUP BY articles.article_id
     ORDER BY articles.created_at DESC`);
 
-    return db.query(formattedQuery).then(({rows})=> rows);
+    return db.query(formattedQuery).then(({rows})=> {
+        rows=rows.map((article)=> {
+            article.comment_count = +article.comment_count;
+            return article;
+        })
+        return rows;
+    });
 }
