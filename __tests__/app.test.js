@@ -193,7 +193,49 @@ describe('Express app',() => {
         })
     });
 
-    describe.only('GET /api/articles',() => {
+    describe.only('GET /api/articles/__article_id/comments',() => {
+        it('200: /api/articles/1/comments returns {comments:[someArray]}',() => {
+            return request(app).get('/api/articles/1/comments').expect(200).then(({body}) => {
+                expect(body).toEqual({comments:expect.any(Array)})
+            });
+        });
+
+        it('200: /api/articles/1/comments returns an array of "comment" objects',() => {
+            return request(app).get('/api/articles/1/comments').expect(200).then(({body}) => {
+                expect(body.comments.length).toBe(11);
+                body.comments.forEach(comment=>{
+                    expect(comment).toEqual(expect.objectContaining({
+                        comment_id:expect.any(Number),
+                        votes:expect.any(Number),
+                        created_at:expect.any(String),
+                        author:expect.any(String),
+                        body:expect.any(String)
+                    }))
+                })
+            });
+        });
+
+        //is this a reasonable return to give?
+        it('200: /api/articles/2/comments an article with no comments returns {comments:[]}',() => {
+            return request(app).get('/api/articles/2/comments').expect(200).then(({body}) => {
+                return expect(body).toEqual({comments:[]})
+            });
+        });
+
+        it('400: /api/articles/cat/comments returns {msg:Invalid article_id}',() => {
+            return request(app).get('/api/articles/cat/comments').expect(400).then(({body})=>{
+                return expect(body).toEqual({msg:'Invalid article_id'})
+            })
+        });
+
+        it('404: /api/articles/66666/comments returns {msg:Invalid article_id}',() => {
+            return request(app).get('/api/articles/66666/comments').expect(404).then(({body})=>{
+                return expect(body).toEqual({msg:'Non-existent article_id'})
+            })
+        });
+    });
+    
+    describe('GET /api/articles',() => {
         it('200: /api/articles returns an array on a key of "articles"',() => {
             return request(app).get('/api/articles').expect(200).then(({body})=>{
                 expect(body).toEqual({articles:expect.any(Array)});

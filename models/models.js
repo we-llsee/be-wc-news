@@ -39,6 +39,15 @@ exports.updateArticleById = (inc_votes,article_id) => {
     });
 }
 
+exports.fetchCommentsByArticleId=(article_id)=>{
+
+    return this.fetchArticleById(article_id).then(()=>{
+        return db.query('SELECT * FROM comments WHERE comments.article_id=$1',[article_id])
+    .then(({rows})=> {
+        return rows
+    })});
+}
+
 exports.fetchArticles=()=>{
     const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
     LEFT JOIN comments 
