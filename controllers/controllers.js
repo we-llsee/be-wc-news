@@ -9,13 +9,8 @@ exports.getTopics =(req,res) => {
 exports.getArticleById=(req,res,next) => {
     const {article_id} =req.params;
 
-    return Promise.resolve().then(()=>{
-        if(Number.isNaN(+article_id)){
-            return Promise.reject({status:400, msg:'Invalid article_id'})
-        }
-    }).then(()=>{
-        return models.fetchArticleById(article_id)
-    }).then((article)=>{    
+    models.fetchArticleById(article_id)
+    .then((article)=>{    
         article[0].comment_count = +article[0].comment_count
         return res.status(200).send({article:article[0]});
     }).catch((err)=>{
