@@ -44,3 +44,13 @@ exports.getUsers=(req,res,next) => {
         return res.status(200).send({users})
     });
 }
+
+exports.getArticles=(req,res,next) => {
+    models.fetchArticles().then(articles=>{
+        articles=articles.map((article)=> {
+            article.comment_count = +article.comment_count;
+            return article;
+        })
+        res.status(200).send({articles});
+    });
+}
