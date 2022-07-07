@@ -66,7 +66,7 @@ describe('Express app',() => {
             });
         });
 
-       it('200: returns an article object with a comment_count key',() => {
+       it('200: /api/articles/1 returns an article object with a comment_count key',() => {
             return request(app).get('/api/articles/1').then(({body})=>{
                 expect(body.article).toHaveProperty('author');
                 expect(body.article).toHaveProperty('comment_count');
@@ -82,8 +82,40 @@ describe('Express app',() => {
         it('404: /api/articles/34567',() => {
             return request(app).get('/api/articles/34567').expect(404).then(({body})=>{
                 expect(body).toEqual({msg:'Non-existent article_id'})
-       
             });
+        });
+    });
+
+    describe('GET /api/users',() => {
+        it('200: GET /api/users',() => {
+            return request(app).get('/api/users').expect(200);
+        });
+
+        it('200: returns array of user objects',() => {
+           return request(app).get('/api/users').expect(200).then(({body:{users}})=>{
+                expect(users.length===4).toBe(true);    
+                users.forEach(user =>{
+                    expect(user).toEqual(expect.objectContaining({
+                        username:expect.any(String),
+                        name:expect.any(String),
+                        avatar_url:expect.any(String)
+                    }))
+                })
+            })
+        });
+
+        it('200: when user table is empty returns: {users:[]}',() => {
+            return db.query('DELETE FROM comments').then(()=>{
+                return db.query('DELETE FROM articles');
+            }).then(() => {
+                return db.query('DELETE FROM users')
+            }).then(() => {
+                return request(app).get('/api/users').expect(200)
+            }).then(data => {
+                return expect(data.body).toEqual({users:[]})
+            }).then(()=>{
+                return seed(testData);
+            })
         });
     });
 
