@@ -54,3 +54,7 @@ exports.fetchArticles=()=>{
         return rows;
     });
 }
+
+exports.addCommentByArticleId=(article_id)=>{
+    
+}

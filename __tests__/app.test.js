@@ -47,7 +47,7 @@ describe('Express app',() => {
     // });
    });
 
-   describe.only('GET /api/articles/:article_id',() => {
+   describe('GET /api/articles/:article_id',() => {
         it('200: /api/articles/1',() => {
             return request(app).get('/api/articles/1').expect(200)
         });
@@ -136,30 +136,42 @@ describe('Express app',() => {
         });
 
         it('200: /api/articles/1 returns the article with article_id=1',() => {
-            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:1});
-            const getPromise=request(app).get('/api/articles/1');
+            let patchResult;
+            let getResult;
 
-            return Promise.all([patchPromise,getPromise]).then(([patchResult,getResult])=>{
-                expect(patchResult.body).toEqual(getResult.body);
-            });
+           return request(app).patch('/api/articles/1').query({inc_votes:1}).then(({body})=>{
+                patchResult=body;
+                return request(app).get('/api/articles/1');
+            }).then(({body})=>{
+                getResult=body;
+                return expect(getResult.article).toEqual(expect.objectContaining(patchResult.article));
+            })
         });
 
         it('200: /api/articles/1 returns article 1, updated as per the PATCH body',() => {
-            const getPromise=request(app).get('/api/articles/1');
-            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:10});
+            let getResult;
+            let patchResult;
 
-            return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
-                expect(patchResult.body.article.votes).toBe(getResult.body.article.votes + 10);
+            return request(app).get('/api/articles/1').then(({body})=>{
+                getResult=body;
+                return request(app).patch('/api/articles/1').query({inc_votes:10});
+            }).then(({body})=>{
+                patchResult=body;
+                return expect(patchResult.article.votes).toBe(getResult.article.votes + 10);
             });
         });
 
         it('200: inc_votes in the PATCH body is a negative number',() => {
-            const getPromise=request(app).get('/api/articles/1');
-            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:-30});
+            let getResult;
+            let patchResult;
 
-            return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
-                expect(patchResult.body.article.votes).toBe(getResult.body.article.votes -30);
-            });
+            return request(app).get('/api/articles/1').then(({body})=>{
+                getResult=body;
+                return request(app).patch('/api/articles/1').query({inc_votes:-30});
+            }).then(({body})=>{
+                patchResult=body;
+                return expect(patchResult.article.votes).toBe(getResult.article.votes -30);
+            })
         });
 
         it('400: Empty PATCH body returns an "Invalid PATCH body" error',() => {
@@ -193,7 +205,7 @@ describe('Express app',() => {
         })
     });
 
-    describe.only('GET /api/articles',() => {
+    describe('GET /api/articles',() => {
         it('200: /api/articles returns an array on a key of "articles"',() => {
             return request(app).get('/api/articles').expect(200).then(({body})=>{
                 expect(body).toEqual({articles:expect.any(Array)});
@@ -241,4 +253,19 @@ describe('Express app',() => {
             })
         });
     });
+
+    describe.only('POST /api/articles/__article_id/comments',() => {
+        // it('200: /api/articles/1/comments returns the posted content',() => {
+        //     let postContent={
+        //         body:'testingtesting',
+        //         votes:1,
+        //         author:"butter_bridge",
+        //     }
+
+        //     return request(app).post('/api/articles/1/comments').send(postContent).then(({body})=>{
+        //         return expect(body).toEqual(postContent);
+        //     })
+        // });
+    });
 });
+

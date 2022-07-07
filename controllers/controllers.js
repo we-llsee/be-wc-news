@@ -50,3 +50,9 @@ exports.getArticles=(req,res,next) => {
         res.status(200).send({articles});
     });
 }
+
+exports.postCommentByArticleId=(req,res,next)=>{
+    const {article_id} =req.params;
+
+    console.log(res.body);
+}

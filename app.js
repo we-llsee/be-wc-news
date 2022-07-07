@@ -12,6 +12,8 @@ app.get('/api/articles',controllers.getArticles);
 
 app.patch('/api/articles/:article_id',controllers.patchArticleById);
 
+app.post('/api/articles/:article_id/comments',controllers.postCommentByArticleId)
+
 app.use((err,req,res,next)=>{
 
     if(err.status && err.msg){
