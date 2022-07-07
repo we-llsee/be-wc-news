@@ -16,6 +16,7 @@ exports.getArticleById=(req,res,next) => {
     }).then(()=>{
         return models.fetchArticleById(article_id)
     }).then((article)=>{    
+        article[0].comment_count = +article[0].comment_count
         return res.status(200).send({article:article[0]});
     }).catch((err)=>{
         next(err);

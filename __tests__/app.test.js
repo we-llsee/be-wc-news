@@ -68,8 +68,19 @@ describe('Express app',() => {
 
        it('200: /api/articles/1 returns an article object with a comment_count key',() => {
             return request(app).get('/api/articles/1').then(({body})=>{
-                expect(body.article).toHaveProperty('author');
                 expect(body.article).toHaveProperty('comment_count');
+            })
+        });
+
+        it('200: /api/articles/3 comment_count=2',() => {
+            return request(app).get('/api/articles/3').then(({body})=>{
+                expect(body.article.comment_count).toBe(2);
+            })
+        });
+
+        it('200: /api/articles/2 comment_count=0',() => {
+            return request(app).get('/api/articles/2').then(({body})=>{
+                expect(body.article.comment_count).toBe(0);
             })
         });
 

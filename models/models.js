@@ -8,13 +8,6 @@ exports.fetchTopics=() =>{
 };
 
 exports.fetchArticleById = (article_id) => {
-    //const formattedQuery = format('SELECT * FROM articles WHERE articles.article_id=1');
-
-    // const formattedquery= format(`SELECT * FROM articles JOIN comments ON articles.article_id=comments.comment_id`);
-
-    // return db.query(formattedQuery).catch((err) => {
-    //     console.log('falling in here')
-    // });
 
     const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
     LEFT JOIN comments 
@@ -26,11 +19,6 @@ exports.fetchArticleById = (article_id) => {
         if(rowCount===0) return Promise.reject({status:404,msg:'Non-existent article_id'});
         return rows});
 
-    //works2
-    //return db.query('SELECT * FROM articles JOIN comments ON articles.article_id=comments.article_id WHERE articles.article_id=1').then(({rows})=> rows)
-
-    //works
-    //return db.query('SELECT * FROM articles WHERE articles.article_id=$1',[article_id]).then(({rows})=> rows)
 }
 
 exports.fetchUsers = ()=>{
