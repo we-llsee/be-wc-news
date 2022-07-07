@@ -77,8 +77,39 @@ describe('Express app',() => {
                 expect(body).toEqual({msg:"Invalid article_id"});
             });
         });
+    });
 
+    describe('GET /api/users',() => {
+        it('200: GET /api/users',() => {
+            return request(app).get('/api/users').expect(200);
+        });
 
+        it('200: returns array of user objects',() => {
+           return request(app).get('/api/users').expect(200).then(({body:{users}})=>{
+                expect(users.length===4).toBe(true);    
+                users.forEach(user =>{
+                    expect(user).toEqual(expect.objectContaining({
+                        username:expect.any(String),
+                        name:expect.any(String),
+                        avatar_url:expect.any(String)
+                    }))
+                })
+            })
+        });
+
+        it('200: when user table is empty returns: {users:[]}',() => {
+            return db.query('DELETE FROM comments').then(()=>{
+                return db.query('DELETE FROM articles');
+            }).then(() => {
+                return db.query('DELETE FROM users')
+            }).then(() => {
+                return request(app).get('/api/users').expect(200)
+            }).then(data => {
+                return expect(data.body).toEqual({users:[]})
+            }).then(()=>{
+                return seed(testData);
+            })
+        });
     });
 
     describe('PATCH /api/articles/:article_id',() => {
