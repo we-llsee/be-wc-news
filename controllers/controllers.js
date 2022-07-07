@@ -44,3 +44,11 @@ exports.getUsers=(req,res,next) => {
         return res.status(200).send({users})
     });
 }
+
+exports.getCommentsByArticleId = (req,res,next) => {
+    const {article_id}=req.params;
+    
+    models.fetchCommentsByArticleId(article_id).then(comments=>{
+        res.status(200).send({comments})
+    }).catch(err => next(err));
+}
