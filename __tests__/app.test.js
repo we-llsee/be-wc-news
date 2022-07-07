@@ -192,4 +192,53 @@ describe('Express app',() => {
             })
         })
     });
+
+    describe.only('GET /api/articles',() => {
+        it('200: /api/articles returns an array on a key of "articles"',() => {
+            return request(app).get('/api/articles').expect(200).then(({body})=>{
+                expect(body).toEqual({articles:expect.any(Array)});
+            })
+        });
+
+        it('200: /api/articles returns an array of "article" objects',() => {
+            return request(app).get('/api/articles').expect(200).then(({body})=>{
+                body.articles.forEach((article)=>{
+                    expect(article).toEqual(expect.objectContaining({
+                        author:expect.any(String),
+                        body:expect.any(String),
+                        title:expect.any(String),
+                        article_id:expect.any(Number),
+                        topic:expect.any(String),
+                        created_at:expect.any(String),
+                        votes:expect.any(Number),
+                        comment_count:expect.any(Number)
+                    }));
+                })
+            })
+        });
+
+        it('200: /api/articles returns an array of length 12',() => {
+            return request(app).get('/api/articles').expect(200).then(({body})=>{
+                expect(body.articles.length).toEqual(12);
+            })
+        });
+
+        it('200: /api/articles returns {articles:[]} when articles table is empty',() => {
+            return db.query('DELETE FROM comments').then(()=>{
+                return db.query('DELETE FROM articles');
+            }).then(() => {
+                return request(app).get('/api/articles').expect(200)
+            }).then(({body}) => {
+                return expect(body).toEqual({articles:[]});
+            }).then(()=>{
+                return seed(testData);
+            })
+        });
+
+        it('200: /api/articles returns array sorted by date in descending order',() => {
+            return request(app).get('/api/articles').expect(200).then(({body})=>{
+                expect(body.articles).toBeSortedBy('created_at',{descending:true});
+            })
+        });
+    });
 });
