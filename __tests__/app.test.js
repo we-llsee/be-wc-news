@@ -319,6 +319,9 @@ describe('Express app',() => {
             return request(app).get('/api/articles?order=asc').expect(200).then(({body})=>{
                 expect(body.articles).toBeSortedBy('created_at',{descending:false});
         })
+        });
+
+        
     });
 
     describe('POST /api/articles/__article_id/comments',() => {
@@ -437,7 +440,6 @@ describe('Express app',() => {
                 expect(body).toEqual({msg:'Non-existent username'})
             });
         });
-    });
     });
 });
 
