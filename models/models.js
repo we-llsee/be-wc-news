@@ -63,3 +63,38 @@ exports.fetchArticles=()=>{
         return rows;
     });
 }
+
+exports.fetchUserByUsername=(username)=>{
+
+    if(typeof username !== 'string'){
+        return Promise.reject({status:400,msg:'Invalid username'})
+    }
+
+    return db.query('SELECT * FROM users WHERE users.username=$1',[username]).then(({rows,rowCount})=>{
+        if(rowCount===0) {
+            return Promise.reject({status:404,msg:'Non-existent username'});
+        }
+        return rows
+    })
+}
+
+exports.addCommentByArticleId=(article_id,comment)=>{
+
+    //Did they say in lecture that pg-format sanitises input to protect against
+    //SQL injection?
+
+    const formattedQuery=format(`INSERT INTO comments
+    (body,article_id,author) VALUES %L RETURNING *`,[[comment.body,article_id,comment.username]]);
+
+    return this.fetchArticleById(article_id).then(()=>{
+        if(typeof comment.body !== 'string' || typeof comment.username !== 'string'){
+            return Promise.reject({status:400,msg:'Invalid POST body'})
+        }
+    }).then(()=>{
+        return this.fetchUserByUsername(comment.username);
+    }).then(()=>{
+        return db.query(formattedQuery)
+    }).then(({rows})=> {
+        return rows
+    })
+}
