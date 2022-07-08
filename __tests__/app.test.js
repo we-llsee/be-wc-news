@@ -302,7 +302,7 @@ describe('Express app',() => {
         });
     });
 
-    describe.only('POST /api/articles/__article_id/comments',() => {
+    describe('POST /api/articles/__article_id/comments',() => {
         it('200: /api/articles/1/comments returns a comment object on a key of "comment"',() => {
             let postContent={
                 body:'testing2',
