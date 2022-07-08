@@ -174,6 +174,12 @@ describe('Express app',() => {
             })
         });
 
+        it('200: /api/articles/8 hard coded test',() => {
+            return request(app).patch('/api/articles/8').send({inc_votes:20}).expect(200).then(({body})=>{
+                expect(body.article.votes).toBe(50);
+            })
+        });
+
         it('400: Empty PATCH body returns an "Invalid PATCH body" error',() => {
             return request(app).patch('/api/articles/1').expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid PATCH body'});
@@ -334,6 +340,20 @@ describe('Express app',() => {
                 getResult= getResult.comments.find(comment=> comment.comment_id === postResult.comment.comment_id);
                 expect(postResult).toEqual({comment:getResult});
             });
+        });
+
+        it('200: /api/articles/9/comments hard coded test',() => {
+            let postContent={
+                body:'hard coded test xqkj',
+                username:"lurker",
+            }
+
+            return request(app).post('/api/articles/9/comments').send(postContent).expect(200).then(()=>{
+                db.query(`SELECT * FROM comments WHERE body='hard coded test xqkj'`).then(({rows})=>{
+                    expect(rows[0].author).toBe('lurker')
+                })
+            })
+
         });
 
         it('400: /api/articles/cat/comments article_id is invalid',() => {
