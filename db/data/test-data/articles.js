@@ -61,7 +61,7 @@ module.exports = [
     author: "icellusedkars",
     body: "Archaeologists have uncovered a gigantic statue from the dawn of humanity, and it has an uncanny resemblance to Mitch. Surely I am not the only person who can see this?!",
     created_at: 1587089280000,
-    votes: 0,
+    votes: 30,
   },
   {
     title: "They're not exactly dogs, are they?",

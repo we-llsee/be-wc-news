@@ -132,34 +132,52 @@ describe('Express app',() => {
 
     describe('PATCH /api/articles/:article_id',() => {
         it('200: /api/articles/1 when article_id exists',() => {
-            return request(app).patch('/api/articles/1').query({inc_votes:1}).expect(200);
+            return request(app).patch('/api/articles/1').send({inc_votes:1}).expect(200);
         });
 
         it('200: /api/articles/1 returns the article with article_id=1',() => {
-            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:1});
-            const getPromise=request(app).get('/api/articles/1');
+            let patchResult;
+            let getResult;
 
-            return Promise.all([patchPromise,getPromise]).then(([patchResult,getResult])=>{
-                expect(patchResult.body).toEqual(getResult.body);
-            });
+           return request(app).patch('/api/articles/1').send({inc_votes:1}).then(({body})=>{
+                patchResult=body;
+                return request(app).get('/api/articles/1');
+            }).then(({body})=>{
+                getResult=body;
+                return expect(getResult.article).toEqual(expect.objectContaining(patchResult.article));
+            })
         });
 
         it('200: /api/articles/1 returns article 1, updated as per the PATCH body',() => {
-            const getPromise=request(app).get('/api/articles/1');
-            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:10});
+            let getResult;
+            let patchResult;
 
-            return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
-                expect(patchResult.body.article.votes).toBe(getResult.body.article.votes + 10);
+            return request(app).get('/api/articles/1').then(({body})=>{
+                getResult=body;
+                return request(app).patch('/api/articles/1').send({inc_votes:10});
+            }).then(({body})=>{
+                patchResult=body;
+                return expect(patchResult.article.votes).toBe(getResult.article.votes + 10);
             });
         });
 
         it('200: inc_votes in the PATCH body is a negative number',() => {
-            const getPromise=request(app).get('/api/articles/1');
-            const patchPromise=request(app).patch('/api/articles/1').query({inc_votes:-30});
+            let getResult;
+            let patchResult;
 
-            return Promise.all([getPromise,patchPromise]).then(([getResult,patchResult])=>{
-                expect(patchResult.body.article.votes).toBe(getResult.body.article.votes -30);
-            });
+            return request(app).get('/api/articles/1').then(({body})=>{
+                getResult=body;
+                return request(app).patch('/api/articles/1').send({inc_votes:-30});
+            }).then(({body})=>{
+                patchResult=body;
+                return expect(patchResult.article.votes).toBe(getResult.article.votes -30);
+            })
+        });
+
+        it('200: /api/articles/8 hard coded test',() => {
+            return request(app).patch('/api/articles/8').send({inc_votes:20}).expect(200).then(({body})=>{
+                expect(body.article.votes).toBe(50);
+            })
         });
 
         it('400: Empty PATCH body returns an "Invalid PATCH body" error',() => {
@@ -169,25 +187,25 @@ describe('Express app',() => {
         });
 
         it('400: inc_votes key in PATCH body has an invalid value',() => {
-            return request(app).patch('/api/articles/1').query({inc_votes:'cat'}).expect(400).then(({body})=>{
+            return request(app).patch('/api/articles/1').send({inc_votes:'cat'}).expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid PATCH body'});
             })
         });
 
         it('400: inc_votes key in PATCH body has no value',() => {
-            return request(app).patch('/api/articles/1').query({inc_votes:undefined}).expect(400).then(({body})=>{
+            return request(app).patch('/api/articles/1').send({inc_votes:undefined}).expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid PATCH body'});
             })
         })
         
         it('400: invalid article_id',() => {
-            return request(app).patch('/api/articles/x').query({inc_votes:1}).expect(400).then(({body})=>{
+            return request(app).patch('/api/articles/x').send({inc_votes:1}).expect(400).then(({body})=>{
                 expect(body).toEqual({msg:'Invalid article_id'});
             })
         })
         
         it('404: non-existant article_id',() => {
-            return request(app).patch('/api/articles/4566').query({inc_votes:1}).expect(404).then(({body})=>{
+            return request(app).patch('/api/articles/4566').send({inc_votes:1}).expect(404).then(({body})=>{
                 expect(body).toEqual({msg:'Non-existent article_id'});
             })
         })
@@ -284,7 +302,7 @@ describe('Express app',() => {
         });
     });
 
-    describe.only('GET /api/articles Queries',() => {
+    describe('GET /api/articles Queries',() => {
         it('200: GET /api/articles?sort_by=article_id',() => {
             return request(app).get('/api/articles?sort_by=article_id').expect(200).then(({body})=>{
                 expect(body.articles).toBeSortedBy('article_id',{descending:true})
@@ -300,7 +318,126 @@ describe('Express app',() => {
         it('200: GET /api/articles?order=asc order value can be in lower case',() => {
             return request(app).get('/api/articles?order=asc').expect(200).then(({body})=>{
                 expect(body.articles).toBeSortedBy('created_at',{descending:false});
+        })
+    });
+
+    describe('POST /api/articles/__article_id/comments',() => {
+        it('200: /api/articles/1/comments returns a comment object on a key of "comment"',() => {
+            let postContent={
+                body:'testing2',
+                username:"butter_bridge",
+            }
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(200).then(({body})=>{
+                
+                expect(body.comment).toEqual(expect.objectContaining({
+                    comment_id:expect.any(Number),
+                    body:'testing2',
+                    article_id:1,
+                    author:'butter_bridge',
+                    votes:0,
+                    created_at:expect.any(String)
+                }))
             })
         });
+
+        it('200: /api/articles/1/comments comment is successfully added to comments table',() => {
+            let postContent={
+                body:'testing3',
+                username:"butter_bridge",
+            }
+
+            let postResult;
+            let getResult;
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(200).then(({body})=>{
+               postResult=body
+            }).then(()=>{
+                return request(app).get('/api/articles/1/comments').expect(200)
+            }).then(({body})=>{
+                getResult=body
+                getResult= getResult.comments.find(comment=> comment.comment_id === postResult.comment.comment_id);
+                expect(postResult).toEqual({comment:getResult});
+            });
+        });
+
+        it('200: /api/articles/9/comments hard coded test',() => {
+            let postContent={
+                body:'hard coded test xqkj',
+                username:"lurker",
+            }
+
+            return request(app).post('/api/articles/9/comments').send(postContent).expect(200).then(()=>{
+                db.query(`SELECT * FROM comments WHERE body='hard coded test xqkj'`).then(({rows})=>{
+                    expect(rows[0].author).toBe('lurker')
+                })
+            })
+
+        });
+
+        it('400: /api/articles/cat/comments article_id is invalid',() => {
+            let postContent={
+                body:'testing4',
+                username:"butter_bridge",
+            }
+            
+            return request(app).post('/api/articles/cat/comments').send(postContent).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid article_id'})
+            });
+        });
+
+        it('400: /api/articles/cat/comments username in PATCH body is invalid',() => {
+            let postContent={
+                body:'testing5',
+                username:1,
+            }
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid POST body'})
+            });
+        });
+
+        it('400: /api/articles/cat/comments body in PATCH body is invalid',() => {
+            let postContent={
+                body:false,
+                username:'butter_bridge'
+            }
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid POST body'})
+            });
+        });
+
+        it('400: /api/articles/cat/comments PATCH body is empty is invalid',() => {
+            let postContent={}
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid POST body'})
+            });
+        });
+
+        it('404: /api/articles/66666/comments article_id is non-existent',() => {
+            let postContent={
+                body:'testing3',
+                username:"butter_bridge",
+            }
+            
+            return request(app).post('/api/articles/66666/comments').send(postContent).expect(404).then(({body})=>{
+                expect(body).toEqual({msg:'Non-existent article_id'})
+            });
+        });
+
+        it('404: /api/articles/1/comments username in PATCH body does not exist',() => {
+            let postContent={
+                body:'testing88',
+                username:"mike",
+            }
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(404).then(({body})=>{
+                expect(body).toEqual({msg:'Non-existent username'})
+            });
+        });
+    });
     });
 });
+

@@ -5,6 +5,8 @@ const controllers = require('./controllers/controllers.js');
 // const apiRouter= require('./api-router')
 // app.use('/api',apiRouter);
 
+app.use(express.json());
+
 app.get('/api/topics',controllers.getTopics);
 app.get('/api/articles/:article_id',controllers.getArticleById);
 app.get('/api/users',controllers.getUsers);
@@ -12,6 +14,8 @@ app.get('/api/articles/:article_id/comments',controllers.getCommentsByArticleId)
 app.get('/api/articles',controllers.getArticles);
 
 app.patch('/api/articles/:article_id',controllers.patchArticleById);
+
+app.post('/api/articles/:article_id/comments',controllers.postCommentByArticleId)
 
 app.use((err,req,res,next)=>{
 
