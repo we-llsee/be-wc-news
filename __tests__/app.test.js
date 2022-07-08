@@ -297,16 +297,106 @@ describe('Express app',() => {
     });
 
     describe.only('POST /api/articles/__article_id/comments',() => {
-        it('200: /api/articles/1/comments returns the posted content',() => {
+        it('200: /api/articles/1/comments returns a comment object on a key of "comment"',() => {
             let postContent={
-                body:'testingtesting',
-                votes:1,
-                author:"butter_bridge",
+                body:'testing2',
+                username:"butter_bridge",
+            }
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(200).then(({body})=>{
+                
+                expect(body.comment).toEqual(expect.objectContaining({
+                    comment_id:expect.any(Number),
+                    body:'testing2',
+                    article_id:1,
+                    author:'butter_bridge',
+                    votes:0,
+                    created_at:expect.any(String)
+                }))
+            })
+        });
+
+        it('200: /api/articles/1/comments comment is successfully added to comments table',() => {
+            let postContent={
+                body:'testing3',
+                username:"butter_bridge",
             }
 
-            return request(app).post('/api/articles/1/comments').send(postContent).then(({body})=>{
-                expect(body).toEqual({comment:postContent});
-            })
+            let postResult;
+            let getResult;
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(200).then(({body})=>{
+               postResult=body
+            }).then(()=>{
+                return request(app).get('/api/articles/1/comments').expect(200)
+            }).then(({body})=>{
+                getResult=body
+                getResult= getResult.comments.find(comment=> comment.comment_id === postResult.comment.comment_id);
+                expect(postResult).toEqual({comment:getResult});
+            });
+        });
+
+        it('400: /api/articles/cat/comments article_id is invalid',() => {
+            let postContent={
+                body:'testing4',
+                username:"butter_bridge",
+            }
+            
+            return request(app).post('/api/articles/cat/comments').send(postContent).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid article_id'})
+            });
+        });
+
+        it('400: /api/articles/cat/comments username in PATCH body is invalid',() => {
+            let postContent={
+                body:'testing5',
+                username:1,
+            }
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid POST body'})
+            });
+        });
+
+        it('400: /api/articles/cat/comments body in PATCH body is invalid',() => {
+            let postContent={
+                body:false,
+                username:'butter_bridge'
+            }
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid POST body'})
+            });
+        });
+
+        it('400: /api/articles/cat/comments PATCH body is empty is invalid',() => {
+            let postContent={}
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid POST body'})
+            });
+        });
+
+        it('404: /api/articles/66666/comments article_id is non-existent',() => {
+            let postContent={
+                body:'testing3',
+                username:"butter_bridge",
+            }
+            
+            return request(app).post('/api/articles/66666/comments').send(postContent).expect(404).then(({body})=>{
+                expect(body).toEqual({msg:'Non-existent article_id'})
+            });
+        });
+
+        it('404: /api/articles/1/comments username in PATCH body does not exist',() => {
+            let postContent={
+                body:'testing88',
+                username:"mike",
+            }
+            
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(404).then(({body})=>{
+                expect(body).toEqual({msg:'Non-existent username'})
+            });
         });
     });
 });

@@ -63,5 +63,7 @@ exports.postCommentByArticleId=(req,res,next)=>{
     const {article_id} =req.params;
     const comment= req.body;
 
-    res.status(200).send({comment})
+    models.addCommentByArticleId(article_id,comment).then(([comment])=>{
+        res.status(200).send({comment})
+    }).catch((err)=> next(err));
 }
