@@ -54,7 +54,11 @@ exports.getCommentsByArticleId = (req,res,next) => {
 }
 
 exports.getArticles=(req,res,next) => {
-    models.fetchArticles().then(articles=>{
+
+    const {sort_by}=req.query;
+    const {order}=req.query;
+
+    models.fetchArticles(sort_by,order).then(articles=>{
         res.status(200).send({articles});
-    });
+    }).catch((err)=>next(err));
 }

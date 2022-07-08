@@ -47,7 +47,7 @@ describe('Express app',() => {
     // });
    });
 
-   describe.only('GET /api/articles/:article_id',() => {
+   describe('GET /api/articles/:article_id',() => {
         it('200: /api/articles/1',() => {
             return request(app).get('/api/articles/1').expect(200)
         });
@@ -193,7 +193,7 @@ describe('Express app',() => {
         })
     });
 
-    describe.only('GET /api/articles/__article_id/comments',() => {
+    describe('GET /api/articles/__article_id/comments',() => {
         it('200: /api/articles/1/comments returns {comments:[someArray]}',() => {
             return request(app).get('/api/articles/1/comments').expect(200).then(({body}) => {
                 expect(body).toEqual({comments:expect.any(Array)})
@@ -280,6 +280,26 @@ describe('Express app',() => {
         it('200: /api/articles returns array sorted by date in descending order',() => {
             return request(app).get('/api/articles').expect(200).then(({body})=>{
                 expect(body.articles).toBeSortedBy('created_at',{descending:true});
+            })
+        });
+    });
+
+    describe.only('GET /api/articles Queries',() => {
+        it('200: GET /api/articles?sort_by=article_id',() => {
+            return request(app).get('/api/articles?sort_by=article_id').expect(200).then(({body})=>{
+                expect(body.articles).toBeSortedBy('article_id',{descending:true})
+            })
+        });
+
+        it('200: GET /api/articles?order=ASC',() => {
+            return request(app).get('/api/articles?order=ASC').expect(200).then(({body})=>{
+                expect(body.articles).toBeSortedBy('created_at',{descending:false});
+            })
+        });
+
+        it('200: GET /api/articles?order=asc order value can be in lower case',() => {
+            return request(app).get('/api/articles?order=asc').expect(200).then(({body})=>{
+                expect(body.articles).toBeSortedBy('created_at',{descending:false});
             })
         });
     });
