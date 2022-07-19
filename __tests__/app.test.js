@@ -302,7 +302,7 @@ describe('Express app',() => {
         });
     });
 
-    describe.only('GET /api/articles Queries',() => {
+    describe('GET /api/articles Queries',() => {
         it('200: GET /api/articles?sort_by=article_id',() => {
             return request(app).get('/api/articles?sort_by=article_id').expect(200).then(({body})=>{
                 expect(body.articles).toBeSortedBy('article_id',{descending:true})
@@ -487,6 +487,38 @@ describe('Express app',() => {
             return request(app).post('/api/articles/1/comments').send(postContent).expect(404).then(({body})=>{
                 expect(body).toEqual({msg:'Non-existent username'})
             });
+        });
+    });
+
+    describe.only('DELETE /api/comments/__comment_id',() => {
+        it('204: /api/comments/1 returns status 204 on valid DELETE request',() => {
+            return request(app).delete('/api/comments/1').expect(204).then(({body})=>{
+                expect(body).toEqual({})
+            })
+        });
+
+        it('204: /api/comments/2 hard coded test',() => {
+            return db.query('SELECT * FROM comments WHERE comment_id=2').then(({rows})=>{
+                if(rows.length!==1) return Promise.reject('Comment with comment_id=2 does not exist at test setup')
+            }).then(()=>{
+                return request(app).delete('/api/comments/2')
+            }).then(()=>{
+                return db.query('SELECT * FROM comments WHERE comment_id=2')
+            }).then(({rows})=>{
+                expect(rows.length===0).toBe(true);
+            })
+        });
+
+        it('400: /api/comments/mikescomment returns "Invalid comment_id"',() => {
+            return request(app).delete('/api/comments/mikescomment').expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid comment_id'})
+            })
+        });
+
+        it('404: /api/comments/66666 returns "Non-existent comment_id"',() => {
+            return request(app).delete('/api/comments/66666').expect(404).then(({body})=>{
+                expect(body).toEqual({msg:'Non-existent comment_id'})
+            })
         });
     });
 });

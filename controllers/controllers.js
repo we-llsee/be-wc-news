@@ -72,3 +72,14 @@ exports.postCommentByArticleId=(req,res,next)=>{
         res.status(200).send({comment})
     }).catch((err)=> next(err));
 }
+
+exports.deleteCommentByCommentId=(req,res,next) =>{
+
+    const {comment_id}=req.params;
+
+    models.removeCommentByCommentId(comment_id).then(()=>{
+        res.status(204).send({});
+    }).catch((err)=>{
+        next(err);
+    })
+}

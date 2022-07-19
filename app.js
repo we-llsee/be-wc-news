@@ -17,6 +17,8 @@ app.patch('/api/articles/:article_id',controllers.patchArticleById);
 
 app.post('/api/articles/:article_id/comments',controllers.postCommentByArticleId)
 
+app.delete('/api/comments/:comment_id',controllers.deleteCommentByCommentId)
+
 app.use((err,req,res,next)=>{
 
     if(err.status && err.msg){
