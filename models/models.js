@@ -48,18 +48,42 @@ exports.fetchCommentsByArticleId=(article_id)=>{
     })});
 }
 
-exports.fetchArticles=()=>{
-    const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
+exports.fetchArticles=(sort_by='created_at',order='DESC')=>{
+
+    const columnQuery=format(`SELECT column_name 
+    FROM information_schema.columns
+    WHERE table_name = 'articles'`)
+
+    //opted for slower solution but less upkeep if additional fields added to articles table etc
+    return db.query(columnQuery).then(({rows})=>{
+
+        if(!rows.find((column)=> column.column_name===sort_by)){
+            return Promise.reject({status:400,msg:'Invalid column'});
+        }
+
+        order=order.toUpperCase();
+
+        if(order!== 'ASC' && order!=='DESC'){
+            return Promise.reject({status:400,msg:'Invalid order value'})
+        }
+
+    }).then(()=>{
+
+        const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
     LEFT JOIN comments 
     ON articles.article_id=comments.article_id
     GROUP BY articles.article_id
-    ORDER BY articles.created_at DESC`);
+    ORDER BY articles.${sort_by} ${order}`);
 
-    return db.query(formattedQuery).then(({rows})=> {
+        return db.query(formattedQuery)
+
+    }).then(({rows})=> {
+
         rows=rows.map((article)=> {
             article.comment_count = +article.comment_count;
             return article;
         })
+
         return rows;
     });
 }

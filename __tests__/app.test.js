@@ -302,6 +302,76 @@ describe('Express app',() => {
         });
     });
 
+    describe.only('GET /api/articles Queries',() => {
+        it('200: GET /api/articles?sort_by=article_id',() => {
+            return request(app).get('/api/articles?sort_by=article_id').expect(200).then(({body})=>{
+                expect(body.articles).toBeSortedBy('article_id',{descending:true})
+            })
+        });
+
+        it('200: GET /api/articles?order=ASC',() => {
+            return request(app).get('/api/articles?order=ASC').expect(200).then(({body})=>{
+                expect(body.articles).toBeSortedBy('created_at',{descending:false});
+            })
+        });
+
+        it('200: GET /api/articles?order=asc order value can be in lower case',() => {
+            return request(app).get('/api/articles?order=asc').expect(200).then(({body})=>{
+                expect(body.articles).toBeSortedBy('created_at',{descending:false});
+        })
+        });
+
+        it('200: GET /api/articles?topic=cats hard coded test',() => {
+            return request(app).get('/api/articles?topic=cats').expect(200).then(({body})=>{
+                expect(body.articles).toEqual([expect.objectContaining({
+                    article_id:5,
+                    title:'UNCOVERED: catspiracy to bring down democracy',
+                    topic:'cats',
+                    author:'rogersop',
+                    body:'Bastet walks amongst us, and the cats are taking arms!',
+                    created_at:expect.any(String),
+                    votes:0,
+                    comment_count:2
+                })])
+            })
+        });
+
+        it('200: GET /api/articles?topic=unassignedtopic returns {articles:[]}',() => {
+            
+            return db.query(`INSERT INTO topics (slug,description)
+            VALUES ('unassignedtopic','used for a test')`).then(()=>{
+                return request(app).get('/api/articles?topic=unassignedtopic').expect(200)
+            }).then(({body})=>{
+                expect(body).toEqual({articles:[]})
+            })
+        });
+
+        it('200: GET /api/articles? returns array of length 12 - hard coded test',() => {
+            return request(app).get('/api/articles?').expect(200).then(({body})=>{
+                expect(body.articles.length).toBe(12);
+            })
+        });
+        
+        it('400: GET /api/articles?sort_by=NOTACOLUMN returns "Invalid sort_by column" message',() => {
+            return request(app).get('/api/articles?sort_by=NOTACOLUMN').expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid sort_by column'})
+            })
+        });
+
+        it('400: GET /api/articles?order=alphabetical returns "Invalid order"',() => {
+            return request(app).get('/api/articles?order=alphabetical').expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid order'})
+            })
+        });
+
+        it('404: GET /api/articles?topic=notatopic returns "Non-existent topic"',() => {
+            return request(app).get('/api/articles?topic=notatopic').expect(404).then(({body})=>{
+                expect(body).toEqual({msg:'Non-existent topic'})
+            })
+        });
+
+    });
+
     describe('POST /api/articles/__article_id/comments',() => {
         it('200: /api/articles/1/comments returns a comment object on a key of "comment"',() => {
             let postContent={
