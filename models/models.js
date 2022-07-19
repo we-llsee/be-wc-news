@@ -48,43 +48,32 @@ exports.fetchCommentsByArticleId=(article_id)=>{
     })});
 }
 
-exports.fetchArticles=(sort_by='created_at',order='DESC')=>{
+exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%')=>{
 
-    const columnQuery=format(`SELECT column_name 
-    FROM information_schema.columns
-    WHERE table_name = 'articles'`)
+    return this.checkTopicExists(topic).then(()=>{
+        return this.checkColumnExists('articles',sort_by)
 
-    //opted for slower solution but less upkeep if additional fields added to articles table etc
-    return db.query(columnQuery).then(({rows})=>{
-
-        if(!rows.find((column)=> column.column_name===sort_by)){
-            return Promise.reject({status:400,msg:'Invalid column'});
-        }
-
+    }).then(()=>{
         order=order.toUpperCase();
-
         if(order!== 'ASC' && order!=='DESC'){
-            return Promise.reject({status:400,msg:'Invalid order value'})
+            return Promise.reject({status:400,msg:'Invalid order'})
         }
 
     }).then(()=>{
-
+        //TODO sanitise inputs
         const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
     LEFT JOIN comments 
     ON articles.article_id=comments.article_id
+    WHERE articles.topic LIKE %L
     GROUP BY articles.article_id
-    ORDER BY articles.${sort_by} ${order}`);
-
+    ORDER BY articles.%I %s`,topic,sort_by,order);
         return db.query(formattedQuery)
 
     }).then(({rows})=> {
-
-        rows=rows.map((article)=> {
+        return rows.map((article)=> {
             article.comment_count = +article.comment_count;
             return article;
         })
-
-        return rows;
     });
 }
 
@@ -121,4 +110,31 @@ exports.addCommentByArticleId=(article_id,comment)=>{
     }).then(({rows})=> {
         return rows
     })
+}
+
+exports.checkTopicExists=(topic) =>{
+    const formattedQuery=format(`SELECT * FROM topics WHERE topics.slug LIKE %L`,topic)
+
+    return db.query(formattedQuery).then(({rows}) => {
+        if(rows.length===0){
+            return Promise.reject({status:404,msg:"Non-existent topic"})
+        }
+        return rows;
+    })
+}
+
+exports.checkColumnExists=(table,column) => {
+ //opted for slower solution but less upkeep if additional fields added to articles table etc
+
+    const formattedQuery=format(`SELECT column_name 
+    FROM information_schema.columns
+    WHERE table_name = %L`,table)
+
+    return db.query(formattedQuery).then(({rows})=>{
+        if(!rows.find((col)=> col.column_name===column)){
+            return Promise.reject({status:400,msg:'Invalid sort_by column'});
+        }
+        return rows;
+    })
+
 }
