@@ -67,8 +67,8 @@ describe('Express app',() => {
         });
 
        it('200: /api/articles/1 returns an article object with a comment_count key',() => {
-            return request(app).get('/api/articles/1').then(({body})=>{
-                expect(body.article).toHaveProperty('comment_count');
+            return request(app).get('/api/articles/1').then((data)=>{
+                expect(data.body.article).toHaveProperty('comment_count');
             })
         });
 
@@ -261,8 +261,8 @@ describe('Express app',() => {
         });
 
         it('200: /api/articles returns an array of "article" objects',() => {
-            return request(app).get('/api/articles').expect(200).then(({body})=>{
-                body.articles.forEach((article)=>{
+            return request(app).get('/api/articles').expect(200).then((data)=>{
+                data.body.articles.forEach((article)=>{
                     expect(article).toEqual(expect.objectContaining({
                         author:expect.any(String),
                         body:expect.any(String),
@@ -490,7 +490,7 @@ describe('Express app',() => {
         });
     });
 
-    describe.only('DELETE /api/comments/__comment_id',() => {
+    describe('DELETE /api/comments/__comment_id',() => {
         it('204: /api/comments/1 returns status 204 on valid DELETE request',() => {
             return request(app).delete('/api/comments/1').expect(204).then(({body})=>{
                 expect(body).toEqual({})

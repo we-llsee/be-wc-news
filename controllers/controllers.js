@@ -9,7 +9,7 @@ exports.getTopics =(req,res) => {
 exports.getArticleById=(req,res,next) => {
     const {article_id} =req.params;
 
-    models.fetchArticleById(article_id)
+    return models.fetchArticleById(article_id)
     .then((article)=>{    
         article[0].comment_count = +article[0].comment_count
         return res.status(200).send({article:article[0]});
@@ -82,4 +82,8 @@ exports.deleteCommentByCommentId=(req,res,next) =>{
     }).catch((err)=>{
         next(err);
     })
+}
+
+exports.getApi=(req,res,next)=>{
+
 }

@@ -12,6 +12,7 @@ app.get('/api/articles/:article_id',controllers.getArticleById);
 app.get('/api/users',controllers.getUsers);
 app.get('/api/articles/:article_id/comments',controllers.getCommentsByArticleId)
 app.get('/api/articles',controllers.getArticles);
+app.get('/api',controllers.getApi)
 
 app.patch('/api/articles/:article_id',controllers.patchArticleById);
 

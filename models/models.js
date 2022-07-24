@@ -21,7 +21,7 @@ exports.fetchArticleById = (article_id) => {
 
     return db.query(formattedQuery).then(({rowCount,rows})=> {
         if(rowCount===0) return Promise.reject({status:404,msg:'Non-existent article_id'});
-        return rows
+        return rows;
     });
 
 }
@@ -165,4 +165,7 @@ exports.fetchCommentByCommentId=(comment_id)=>{
 
         return data.rows;
     })
+}
+
+exports.fetchApi=()=>{
 }
