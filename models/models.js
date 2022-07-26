@@ -48,7 +48,7 @@ exports.fetchCommentsByArticleId=(article_id)=>{
     })});
 }
 
-exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%')=>{
+exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%',limit=10,p=0)=>{
 
     return this.checkTopicExists(topic).then(()=>{
         return this.checkColumnExists('articles',sort_by)
@@ -59,6 +59,13 @@ exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%')=>{
             return Promise.reject({status:400,msg:'Invalid order'})
         }
 
+        if(!Number.isInteger(+limit) || limit<0){
+            return Promise.reject({status:400,msg:'Invalid limit query'})
+        }
+
+        if(!Number.isInteger(+p) || p<0){
+            return Promise.reject({status:400,msg:'Invalid page query'})
+        }
     }).then(()=>{
         //TODO sanitise inputs
         const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
@@ -66,7 +73,8 @@ exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%')=>{
     ON articles.article_id=comments.article_id
     WHERE articles.topic LIKE %L
     GROUP BY articles.article_id
-    ORDER BY articles.%I %s`,topic,sort_by,order);
+    ORDER BY articles.%I %s
+    LIMIT %L OFFSET %L`,topic,sort_by,order,limit,p);
         return db.query(formattedQuery)
 
     }).then(({rows})=> {

@@ -58,8 +58,10 @@ exports.getArticles=(req,res,next) => {
     const {sort_by}=req.query;
     const {order}=req.query;
     const {topic}=req.query;
+    const {limit}=req.query;
+    const {p}=req.query;
 
-    models.fetchArticles(sort_by,order,topic).then(articles=>{
+    models.fetchArticles(sort_by,order,topic,limit,p).then(articles=>{
         res.status(200).send({articles});
     }).catch((err)=>next(err));
 }

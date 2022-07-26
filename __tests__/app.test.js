@@ -279,7 +279,7 @@ describe('Express app',() => {
 
         it('200: /api/articles returns an array of length 12',() => {
             return request(app).get('/api/articles').expect(200).then(({body})=>{
-                expect(body.articles.length).toEqual(12);
+                expect(body.articles.length).toEqual(10);
             })
         });
 
@@ -348,7 +348,7 @@ describe('Express app',() => {
 
         it('200: GET /api/articles? returns array of length 12 - hard coded test',() => {
             return request(app).get('/api/articles?').expect(200).then(({body})=>{
-                expect(body.articles.length).toBe(12);
+                expect(body.articles.length).toBe(10);
             })
         });
         
@@ -520,6 +520,97 @@ describe('Express app',() => {
                 expect(body).toEqual({msg:'Non-existent comment_id'})
             })
         });
+    });
+
+    describe('GET /api/articles pagination',()=>{
+        it('200: /api/articles/?limit=3 returns 3 article objects',()=>{
+            return request(app).get('/api/articles?limit=3').expect(200).then(({body})=>{
+                expect(body.articles.length).toBe(3);
+                body.articles.forEach((article)=>{
+                    expect(article).toEqual(expect.objectContaining({
+                        author:expect.any(String),
+                        body:expect.any(String),
+                        title:expect.any(String),
+                        article_id:expect.any(Number),
+                        topic:expect.any(String),
+                        created_at:expect.any(String),
+                        votes:expect.any(Number),
+                        comment_count:expect.any(Number)
+                    }));
+                })
+            })
+        });
+
+        it('200: /api/articles limit has a default value of 10 (if not otherwise specified)',()=>{
+            return request(app).get('/api/articles').expect(200).then(({body})=>{
+                expect(body.articles.length).toBe(10);
+            })
+        });
+
+        it('200: /api/articles/?limit=2&p=2 hardcoded test. returns 3 and 4th article to be added',()=>{
+            return db.query(`INSERT INTO articles 
+            (title,topic,author,body,votes,created_at)
+            VALUES
+            ('1','paper','lurker','1',1,'2023-06-06 21:11:00'),
+            ('2','paper','lurker','2',2,'2023-07-07 21:11:00'),
+            ('3','paper','lurker','3',3,'2023-08-08 21:11:00'),
+            ('4','paper','lurker','4',4,'2023-09-09 21:11:00'),
+            ('5','paper','lurker','5',5,'2023-10-10 21:11:00'),
+            ('6','paper','lurker','6',6,'2023-11-11 21:11:00')`).then(()=>{
+                return request(app).get('/api/articles?limit=2&p=2').expect(200).then(({body})=>{
+                    expect(body).toEqual({articles:[
+                        {author:'lurker',
+                        body:'4',
+                        title:'4',
+                        article_id:expect.any(Number),
+                        topic:'paper',
+                        created_at:expect.any(String),
+                        votes:4,
+                        comment_count:expect.any(Number)},
+                        {author:'lurker',
+                        body:'3',
+                        title:'3',
+                        article_id:expect.any(Number),
+                        topic:'paper',
+                        created_at:expect.any(String),
+                        votes:3,
+                        comment_count:expect.any(Number)},
+                    ]})
+                })
+            })
+            
+            
+        })
+
+        it('200: /api/articles/?limit=2&p=99 returns {articles:[]}',()=>{
+            return request(app).get('/api/articles?limit=2&p=99').expect(200).then(({body})=>{
+                expect(body).toEqual({articles:[]});
+            }) 
+        })
+
+        it('400: /api/articles/?limit=-4 returns {msg: Invalid limit query}',()=>{
+            return request(app).get('/api/articles/?limit=-4').expect(400).then(({body})=>{
+                expect(body).toEqual({msg: 'Invalid limit query'})
+            })
+        })
+
+        it('400: /api/articles/?limit=cat returns {msg: Invalid limit query}',()=>{
+            return request(app).get('/api/articles/?limit=cat').expect(400).then(({body})=>{
+                expect(body).toEqual({msg: 'Invalid limit query'})
+            })
+        })
+
+        it('400: /api/articles/?limit=5&p=dog returns {msg: Invalid page query}',()=>{
+            return request(app).get('/api/articles/?limit=5&p=dog').expect(400).then(({body})=>{
+                expect(body).toEqual({msg: 'Invalid page query'})
+            })
+        })
+
+        it('400: /api/articles/?limit=5&p=-2 returns {msg: Invalid page query}',()=>{
+            return request(app).get('/api/articles/?limit=5&p=-2').expect(400).then(({body})=>{
+                expect(body).toEqual({msg: 'Invalid page query'})
+            })
+        })
     });
 });
 
