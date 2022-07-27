@@ -61,8 +61,8 @@ exports.getArticles=(req,res,next) => {
     const {limit}=req.query;
     const {p}=req.query;
 
-    models.fetchArticles(sort_by,order,topic,limit,p).then(articles=>{
-        res.status(200).send(articles);
+    models.fetchArticles(sort_by,order,topic,limit,p).then(({articles,total_count})=>{
+        res.status(200).send({articles,total_count});
     }).catch((err)=>next(err));
 }
 
