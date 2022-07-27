@@ -48,20 +48,18 @@ exports.fetchCommentsByArticleId=(article_id)=>{
     })});
 }
 
-//TODO make a fetchArticlesAll which can be called in order to find out the total number of overall results (without limit). This will be called from the controller with a
-//LIMIT of ALL. The fetchArticles could also call this in the interest of keeping code DRY
-exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%',limit=10,p=0)=>{
+exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%',limit=10,page=1)=>{
 
     let total_count;
 
-    const formatArticlesQuery=(sort_by,order,topic,limit,p) =>{
+    const buildArticlesQuery=(sort_by,order,topic,limit,offset) =>{
         return format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
         LEFT JOIN comments 
         ON articles.article_id=comments.article_id
         WHERE articles.topic LIKE %L
         GROUP BY articles.article_id
         ORDER BY articles.%I %s
-        LIMIT %s OFFSET %L`,topic,sort_by,order,limit,p);
+        LIMIT %s OFFSET %L`,topic,sort_by,order,limit,offset);
     }
 
     return this.checkTopicExists(topic).then(()=>{
@@ -73,19 +71,22 @@ exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%',limit=10,p=0)
             return Promise.reject({status:400,msg:'Invalid order'})
         }
 
-        if(!Number.isInteger(+limit) || limit<0){
+        limit= parseInt(limit)
+        if(!Number.isInteger(limit) || limit<0){
             return Promise.reject({status:400,msg:'Invalid limit query'})
         }
 
-        if(!Number.isInteger(+p) || p<0){
+        page= parseInt(page)
+        if(!Number.isInteger(page) || page<1){
             return Promise.reject({status:400,msg:'Invalid page query'})
         }
     }).then(()=>{
         //TODO check fully sanitised
-        return db.query(formatArticlesQuery(sort_by,order,topic,"ALL",0))
+        return db.query(buildArticlesQuery(sort_by,order,topic,"ALL",0))
 }).then((res)=>{
         total_count= res.rowCount
-        return db.query(formatArticlesQuery(sort_by,order,topic,limit,p))
+        let offset= (page-1) * limit
+        return db.query(buildArticlesQuery(sort_by,order,topic,limit,offset))
     }).then(({rows})=> {
         return  {total_count,
                 articles:   rows.map((article)=> {
