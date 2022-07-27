@@ -189,3 +189,15 @@ exports.fetchCommentByCommentId=(comment_id)=>{
 
 exports.fetchApi=()=>{
 }
+
+exports.fetchTopicBySlug=(slug)=>{
+
+    const formattedQuery= format('SELECT * FROM topics WHERE topics.slug=%L',slug)
+
+    return db.query(formattedQuery).then(({rows,rowCount})=>{
+        if(rowCount===0){
+            return Promise.reject({status:404,msg:'No topic exists with specified slug'})
+        }
+        return rows;
+    })
+}

@@ -89,3 +89,15 @@ exports.deleteCommentByCommentId=(req,res,next) =>{
 exports.getApi=(req,res,next)=>{
 
 }
+
+exports.getTopicBySlug=(req,res,next)=>{
+
+    const {slug} = req.params;
+
+    models.fetchTopicBySlug(slug).then(([topic])=>{
+        res.status(200).send({topic})
+    }).catch((err)=>{
+        next(err);
+    });
+    
+}
