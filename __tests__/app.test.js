@@ -656,5 +656,30 @@ describe('Express app',() => {
             })
         })
     });
+
+    describe('GET /api/topics/:slug',()=>{
+        it('200: /api/topics/cats returns an object on a key of topic',()=>{
+            return request(app).get('/api/topics/cats').expect(200).then(({body})=>{
+                expect(body).toEqual({topic: expect.objectContaining({
+                    slug: 'cats',
+                    description:expect.any(String)
+                })})
+            })
+        })
+
+        it('404: /api/topics/DOESNTEXIST returns {msg: No topic exists with specified slug}',()=>{
+            return request(app).get('/api/topics/DOESNTEXIST').then(res => {
+                expect(res.status).toBe(404);
+                expect(res.body).toEqual({msg:'No topic exists with specified slug'})
+            })
+        })
+
+        it("404 /api/topics/'; sanitised to protect against SQL injection",()=>{
+            return request(app).get("/api/topics/';").then(res =>{
+                expect(res.status).toBe(404);
+                expect(res.body).toEqual({msg:'No topic exists with specified slug'})
+            })
+        })
+    })
 });
 
