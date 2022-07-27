@@ -256,7 +256,7 @@ describe('Express app',() => {
     describe('GET /api/articles',() => {
         it('200: /api/articles returns an array on a key of "articles"',() => {
             return request(app).get('/api/articles').expect(200).then(({body})=>{
-                expect(body).toEqual({articles:expect.any(Array)});
+                expect(body).toEqual(expect.objectContaining({articles:expect.any(Array)}));
             })
         });
 
@@ -277,7 +277,7 @@ describe('Express app',() => {
             })
         });
 
-        it('200: /api/articles returns an array of length 12',() => {
+        it('200: /api/articles returns an array of length 10',() => {
             return request(app).get('/api/articles').expect(200).then(({body})=>{
                 expect(body.articles.length).toEqual(10);
             })
@@ -289,7 +289,7 @@ describe('Express app',() => {
             }).then(() => {
                 return request(app).get('/api/articles').expect(200)
             }).then(({body}) => {
-                return expect(body).toEqual({articles:[]});
+                return expect(body).toEqual(expect.objectContaining({total_count:0,articles:[]}));
             }).then(()=>{
                 return seed(testData);
             })
@@ -342,7 +342,7 @@ describe('Express app',() => {
             VALUES ('unassignedtopic','used for a test')`).then(()=>{
                 return request(app).get('/api/articles?topic=unassignedtopic').expect(200)
             }).then(({body})=>{
-                expect(body).toEqual({articles:[]})
+                expect(body).toEqual(expect.objectContaining({total_count:0,articles:[]}))
             })
         });
 
@@ -547,6 +547,26 @@ describe('Express app',() => {
             })
         });
 
+        it('200: /api/articles/?limit=6 p has a default value of 0 if not specified in query',()=>{
+            return db.query(`INSERT INTO articles 
+            (title,topic,author,body,votes)
+            VALUES
+            ('1','paper','lurker','someTest9j7k',1),
+            ('2','paper','lurker','someTest9j7k',2),
+            ('3','paper','lurker','someTest9j7k',3),
+            ('4','paper','lurker','someTest9j7k',4),
+            ('5','paper','lurker','someTest9j7k',5),
+            ('6','paper','lurker','someTest9j7k',6)`).then(()=>{
+                return request(app).get('/api/articles?limit=2&p=2').expect(200).then(({body})=>{;
+                    body.articles.forEach(result=>{
+                        expect(result.body).toBe('someTest9j7k')
+                    })
+                })
+            })
+            
+            
+        })
+
         it('200: /api/articles/?limit=2&p=2 hardcoded test. returns 3 and 4th article to be added',()=>{
             return db.query(`INSERT INTO articles 
             (title,topic,author,body,votes,created_at)
@@ -557,8 +577,8 @@ describe('Express app',() => {
             ('4','paper','lurker','4',4,'2023-09-09 21:11:00'),
             ('5','paper','lurker','5',5,'2023-10-10 21:11:00'),
             ('6','paper','lurker','6',6,'2023-11-11 21:11:00')`).then(()=>{
-                return request(app).get('/api/articles?limit=2&p=2').expect(200).then(({body})=>{
-                    expect(body).toEqual({articles:[
+                return request(app).get('/api/articles?limit=2&p=2').expect(200).then(({body})=>{;
+                    expect(body.articles).toEqual(expect.arrayContaining([
                         {author:'lurker',
                         body:'4',
                         title:'4',
@@ -575,16 +595,40 @@ describe('Express app',() => {
                         created_at:expect.any(String),
                         votes:3,
                         comment_count:expect.any(Number)},
-                    ]})
+                    ]))
                 })
             })
             
             
         })
 
+        it('200: /api/articles/?limit=3 hardcoded test. returns a key of total_count and value of total number of articles - ignoring the limit',()=>{
+            let totalRows
+            
+            return db.query('SELECT * FROM articles').then(({rowCount})=>{
+                totalRows=rowCount;
+            }).then(()=>{
+                return request(app).get('/api/articles/?limit=3').expect(200)
+            }).then(({body})=>{
+                expect(body).toEqual(expect.objectContaining({total_count:totalRows}))
+            }) 
+        })
+
+        it('200: /api/articles/?limit=2&p=3 hardcoded test. returns a key of total_count and value of total number of articles - ignoring the limit and p(offset)',()=>{
+            let totalRows
+            
+            return db.query('SELECT * FROM articles').then(({rowCount})=>{
+                totalRows=rowCount;
+            }).then(()=>{
+                return request(app).get('/api/articles/?limit=2&p=3').expect(200)
+            }).then(({body})=>{
+                expect(body).toEqual(expect.objectContaining({total_count:totalRows}))
+            }) 
+        })
+
         it('200: /api/articles/?limit=2&p=99 returns {articles:[]}',()=>{
             return request(app).get('/api/articles?limit=2&p=99').expect(200).then(({body})=>{
-                expect(body).toEqual({articles:[]});
+                expect(body).toEqual(expect.objectContaining({articles:[]}));
             }) 
         })
 
