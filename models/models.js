@@ -48,7 +48,21 @@ exports.fetchCommentsByArticleId=(article_id)=>{
     })});
 }
 
+//TODO make a fetchArticlesAll which can be called in order to find out the total number of overall results (without limit). This will be called from the controller with a
+//LIMIT of ALL. The fetchArticles could also call this in the interest of keeping code DRY
 exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%',limit=10,p=0)=>{
+
+    let total_count;
+
+    const formatArticlesQuery=(sort_by,order,topic,limit,p) =>{
+        return format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
+        LEFT JOIN comments 
+        ON articles.article_id=comments.article_id
+        WHERE articles.topic LIKE %L
+        GROUP BY articles.article_id
+        ORDER BY articles.%I %s
+        LIMIT %s OFFSET %L`,topic,sort_by,order,limit,p);
+    }
 
     return this.checkTopicExists(topic).then(()=>{
         return this.checkColumnExists('articles',sort_by)
@@ -67,21 +81,18 @@ exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%',limit=10,p=0)
             return Promise.reject({status:400,msg:'Invalid page query'})
         }
     }).then(()=>{
-        //TODO sanitise inputs
-        const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
-    LEFT JOIN comments 
-    ON articles.article_id=comments.article_id
-    WHERE articles.topic LIKE %L
-    GROUP BY articles.article_id
-    ORDER BY articles.%I %s
-    LIMIT %L OFFSET %L`,topic,sort_by,order,limit,p);
-        return db.query(formattedQuery)
-
+        //TODO check fully sanitised
+        return db.query(formatArticlesQuery(sort_by,order,topic,"ALL",0))
+}).then((res)=>{
+        total_count= res.rowCount
+        return db.query(formatArticlesQuery(sort_by,order,topic,limit,p))
     }).then(({rows})=> {
-        return rows.map((article)=> {
-            article.comment_count = +article.comment_count;
-            return article;
-        })
+        return  {total_count,
+                articles:   rows.map((article)=> {
+                                article.comment_count = +article.comment_count;
+                                return article;
+                            })
+                }
     });
 }
 
