@@ -233,12 +233,36 @@ describe('Express app',() => {
             });
         });
 
-        //is this a reasonable return to give?
         it('200: /api/articles/2/comments an article with no comments returns {comments:[]}',() => {
             return request(app).get('/api/articles/2/comments').expect(200).then(({body}) => {
                 return expect(body).toEqual({comments:[]})
             });
         });
+
+        //TODO add comment pagination
+        it('200 /api/articles/1/comments returns comments sorted by date',()=>{
+            return request(app).get('/api/articles/1/comments').expect(200).then(({body})=>{
+                expect(body.comments).toBeSortedBy('created_at',{descending:true})
+            })
+        })
+
+        it('200 /api/articles/1/comments hardcoded example returns comments sorted by date',()=>{
+            
+            return db.query(`DELETE FROM comments WHERE comments.article_id=4`).then(()=>{
+                return db.query(`INSERT INTO comments
+                    (body,article_id,author,votes)
+                    VALUES
+                    ('test1',4,'lurker',0),
+                    ('test2',4,'lurker',0),
+                    ('test3',4,'lurker',0),
+                    ('test4',4,'lurker',0)`)
+            }).then(()=>{
+                return request(app).get('/api/articles/4/comments').expect(200)
+            }).then(({body})=>{
+               expect(body.comments).toBeSortedBy('created_at',{descending:true})
+            })
+           
+        })
 
         it('400: /api/articles/cat/comments returns {msg:Invalid article_id}',() => {
             return request(app).get('/api/articles/cat/comments').expect(400).then(({body})=>{
