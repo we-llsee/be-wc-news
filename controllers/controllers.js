@@ -47,10 +47,14 @@ exports.getUsers=(req,res,next) => {
 
 exports.getCommentsByArticleId = (req,res,next) => {
     const {article_id}=req.params;
+    const {limit}=req.query;
+    const {p}=req.query;
     
-    models.fetchCommentsByArticleId(article_id).then(comments=>{
+    models.fetchCommentsByArticleId(article_id,limit,p).then(comments=>{
         res.status(200).send({comments})
-    }).catch(err => next(err));
+    }).catch((err) => {
+       next(err) 
+    });
 }
 
 exports.getArticles=(req,res,next) => {
