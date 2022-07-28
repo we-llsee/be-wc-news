@@ -220,7 +220,7 @@ describe('Express app',() => {
 
         it('200: /api/articles/1/comments returns an array of "comment" objects',() => {
             return request(app).get('/api/articles/1/comments').expect(200).then(({body}) => {
-                expect(body.comments.length).toBe(11);
+                expect(body.comments.length).toBe(10);
                 body.comments.forEach(comment=>{
                     expect(comment).toEqual(expect.objectContaining({
                         comment_id:expect.any(Number),
@@ -702,6 +702,118 @@ describe('Express app',() => {
             return request(app).get("/api/topics/';").then(res =>{
                 expect(res.status).toBe(404);
                 expect(res.body).toEqual({msg:'No topic exists with specified slug'})
+            })
+        })
+    })
+
+    describe('GET /api/articles/:article_id/comments pagination',()=>{
+        it('200: /api/articles/1/comments?limit=5 returns array of 5 results',()=>{
+            return request(app).get('/api/articles/1/comments?limit=5').expect(200).then(res=>{
+                expect(res.body.comments.length).toBe(5);
+            })
+        })
+
+        it('200: /api/articles/1/comments returns array of 10 results by default',()=>{
+            return db.query('SELECT * FROM comments WHERE comments.article_id=1').then(({rows})=>{
+                expect(rows.length>10).toBe(true);
+            }).then(()=>{
+                return request(app).get('/api/articles/1/comments').expect(200)
+            }).then(res=>{
+                expect(res.body.comments.length).toBe(10);
+            }) 
+        })
+
+        it('200: /api/articles/1/comments?limit=5&p=2 hardcoded test returns second 5 results',()=>{
+            return db.query(`DELETE FROM comments WHERE comments.article_id=4`).then(()=>{
+                return db.query(`INSERT INTO comments
+                    (body,article_id,author,votes)
+                    VALUES
+                    ('test1',4,'lurker',0),
+                    ('test2',4,'lurker',0),
+                    ('test3',4,'lurker',0),
+                    ('test4',4,'lurker',0),
+                    ('test5',4,'lurker',0),
+                    ('test6',4,'lurker',0),
+                    ('test7',4,'lurker',0),
+                    ('test8',4,'lurker',0),
+                    ('test9',4,'lurker',0),
+                    ('test10',4,'lurker',0),
+                    ('test11',4,'lurker',0),
+                    ('test12',4,'lurker',0)
+                    `)
+            }).then(()=>{
+                return request(app).get('/api/articles/4/comments?limit=5&p=2').expect(200)
+            }).then(({body})=>{
+                
+              for(let i=0;i<=4;i++){
+                let testStr='test' + (i+6)
+
+                expect(body.comments[i].body).toBe(testStr);
+              }
+            })
+        })
+
+        it('200: /api/articles/1/comments?limit=5 hardcoded test - p is 1 by default',()=>{
+            return db.query(`DELETE FROM comments WHERE comments.article_id=4`).then(()=>{
+                return db.query(`INSERT INTO comments
+                    (body,article_id,author,votes)
+                    VALUES
+                    ('test1',4,'lurker',0),
+                    ('test2',4,'lurker',0),
+                    ('test3',4,'lurker',0),
+                    ('test4',4,'lurker',0),
+                    ('test5',4,'lurker',0),
+                    ('test6',4,'lurker',0),
+                    ('test7',4,'lurker',0),
+                    ('test8',4,'lurker',0),
+                    ('test9',4,'lurker',0),
+                    ('test10',4,'lurker',0)
+                    `)
+            }).then(()=>{
+                return request(app).get('/api/articles/4/comments?limit=5').expect(200)
+            }).then(({body})=>{
+                
+              for(let i=0;i<=4;i++){
+                let testStr='test' + (i+1)
+
+                expect(body.comments[i].body).toBe(testStr);
+              }
+            })
+        })
+
+        it('200: /api/articles/1/comments?limit=5 maintains sort by date with limit query applied',()=>{
+            return request(app).get('/api/articles/1/comments?limit=5').expect(200).then(({body})=>{
+                expect(body.comments).toBeSortedBy('created_at',{descending:true})
+            })
+        })
+
+        it('200: /api/articles/1/comments?limit=5&p=2 maintains sort by date with limit & page queries applied',()=>{
+            return request(app).get('/api/articles/1/comments?limit=5&p=2').expect(200).then(({body})=>{
+                expect(body.comments).toBeSortedBy('created_at',{descending:true})
+            })
+        })
+
+        it('400: /api/articles/1/comments?limit=5&p=three returns {msg: Invalid page query}',()=>{
+            return request(app).get('/api/articles/1/comments?limit=5&p=three').expect(400).then(({body})=>{
+                expect(body).toEqual({msg: 'Invalid page query'})
+            })
+        })
+
+        it('400: /api/articles/1/comments?limit=5&p=-1 returns {msg: Invalid page query}',()=>{
+            return request(app).get('/api/articles/1/comments?limit=5&p=-1').expect(400).then(({body})=>{
+                expect(body).toEqual({msg: 'Invalid page query'})
+            })
+        })
+
+        it('400: /api/articles/1/comments?limit=five returns {msg: Invalid limit query}',()=>{
+            return request(app).get('/api/articles/1/comments?limit=five').expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid limit query'})
+            })
+        })
+
+        it('400: /api/articles/1/comments?limit=-6 returns {msg: Invalid limit query}',()=>{
+            return request(app).get('/api/articles/1/comments?limit=-6').expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid limit query'})
             })
         })
     })

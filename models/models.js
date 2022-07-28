@@ -39,12 +39,25 @@ exports.updateArticleById = (inc_votes,article_id) => {
     });
 }
 
-exports.fetchCommentsByArticleId=(article_id)=>{
+exports.fetchCommentsByArticleId=(article_id,limit=10,page=1)=>{
+
+    page= parseInt(page)
+    if(!Number.isInteger(page) || page<1){
+        return Promise.reject({status:400,msg:"Invalid page query"})
+    }
+
+    limit= parseInt(limit)
+    if(!Number.isInteger(limit) || limit<1){
+        return Promise.reject({status:400,msg:"Invalid limit query"})
+    }
+
+    const formattedQuery=format(`SELECT * FROM comments 
+    WHERE comments.article_id=%L 
+    ORDER BY comments.created_at DESC
+    LIMIT %s OFFSET %L`,article_id,limit,(page-1) * limit)
 
     return this.fetchArticleById(article_id).then(()=>{
-        return db.query(`SELECT * FROM comments 
-        WHERE comments.article_id=$1 
-        ORDER BY comments.created_at DESC`,[article_id])
+        return db.query(formattedQuery)
     .then(({rows})=> {
         return rows
     })});
