@@ -19,6 +19,7 @@ app.get('/api',controllers.getApi)
 app.get('/api/topics/:slug',controllers.getTopicBySlug)
 
 app.patch('/api/articles/:article_id',controllers.patchArticleById);
+app.patch('/api/comments/:comment_id',controllers.patchCommentById);
 
 app.post('/api/articles/:article_id/comments',controllers.postCommentByArticleId)
 

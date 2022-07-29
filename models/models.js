@@ -229,3 +229,41 @@ exports.fetchTopicBySlug=(slug)=>{
         return rows;
     })
 }
+
+exports.updateCommentById=(comment_id,inc_votes=0)=>{
+
+    comment_id=parseInt(comment_id)
+    inc_votes=parseInt(inc_votes)
+
+    if(!Number.isInteger(inc_votes)){
+        return Promise.reject({status:400,msg:'Invalid PATCH body'})
+    }
+
+    return this.getCommentById(comment_id).then(()=>{
+
+        const formattedQuery=format(`UPDATE comments 
+        SET votes=votes+%L
+        WHERE comment_id=%L
+        RETURNING *`,inc_votes,comment_id)
+
+        return db.query(formattedQuery)
+    }).then(({rows})=>{
+        return rows[0]
+    })
+}   
+
+exports.getCommentById=(comment_id)=>{
+
+    if(!Number.isInteger(comment_id) || comment_id<1){
+        return Promise.reject({status:400,msg:'Invalid comment_id'})
+    }
+
+    const formattedQuery=format(`SELECT * FROM comments WHERE comment_id=%L`,comment_id)
+
+    return db.query(formattedQuery).then(({rows,rowCount})=>{
+        if(rowCount===0){
+            return Promise.reject({status:404, msg:'Comment_id not found'})
+        }
+        return rows
+    })
+}
