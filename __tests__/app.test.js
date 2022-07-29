@@ -909,9 +909,78 @@ describe('Express app',() => {
 
         it('400 /api/topics?p=-4 returns {mgs: Invalid page query}',()=>{
             return request(app).get('/api/topics?p=-4').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid page query'})
-            });
+              expect(body).toEqual({msg:'Invalid page query'})
+            }).then(()=>{
+                return seed(testData)
+            })
         })
+    })
+
+    describe('PATCH /api/comments/:comment_id',()=>{
+
+        it('200 /api/comments/1 hardcoded - increase by 1 vote',()=>{
+            let beforePatch;
+            let afterPatch;
+            return db.query(`SELECT * FROM comments WHERE comment_id=1`).then(({rows})=>{
+                beforePatch=rows[0].votes;
+            }).then(()=>{
+                return request(app).patch('/api/comments/1').send({inc_votes:1})
+            }).then(()=>{
+                return db.query(`SELECT * FROM comments WHERE comment_id=1`)
+            }).then(({rows})=>{
+                afterPatch=rows[0].votes;
+                expect(afterPatch).toBe(beforePatch+1);
+            })
+        })
+
+        it('200 /api/comments/3 hardcoded - decrease by 3 vote',()=>{
+            let beforePatch;
+            let afterPatch;
+            return db.query(`SELECT * FROM comments WHERE comment_id=3`).then(({rows})=>{
+                beforePatch=rows[0].votes;
+            }).then(()=>{
+                return request(app).patch('/api/comments/3').send({inc_votes:-3})
+            }).then(()=>{
+                return db.query(`SELECT * FROM comments WHERE comment_id=3`)
+            }).then(({rows})=>{
+                afterPatch=rows[0].votes;
+                expect(afterPatch).toBe(beforePatch-3);
+            })
+        })
+
+        it('200 /api/comments/1 hardcoded -returns the updated comment on a key of comment',()=>{
+            let beforePatch;
+            return db.query(`SELECT * FROM comments WHERE comment_id=1`).then(({rows})=>{
+                beforePatch=rows[0]
+            }).then(()=>{
+                return request(app).patch('/api/comments/1').send({inc_votes:1})
+            }).then(({body})=>{
+                console.log(body)
+                expect(body).toEqual(expect.objectContaining(
+                    {comment: {article_id: beforePatch.article_id,
+                    author:beforePatch.author,
+                    body:beforePatch.body,
+                    comment_id:beforePatch.comment_id,
+                    created_at:expect.any(String),
+                    votes:beforePatch.votes+1}}))
+            })
+        })
+        
+        it('400 /api/comments/thirty invalid comment_id returns {msg: Invalid comment_id}',()=>{
+            return request(app).patch('/api/comments/thirty').send({inc_votes:1}).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid comment_id'})
+            })
+        })
+
+        it('400 /api/comments/1  invalid PATCH body {inc_votes:ten} returns {msg: Invalid PATCH body}',()=>{
+            return request(app).patch('/api/comments/1').send({inc_votes:'ten'}).expect(400).then(({body})=>{
+                expect(body).toEqual({msg:'Invalid PATCH body'})
+            })
+        })
+
+        it('404 /api/comments/66666 non-existent comment_id returns 404',()=>{
+            return request(app).patch('/api/comments/66666').send({inc_votes:1}).expect(404)
+        });
     })
 });
 
