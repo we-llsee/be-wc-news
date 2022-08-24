@@ -1,10 +1,10 @@
 const express=require('express');
 const app = express();
-const {getTopics,getTopicBySlug} = require('./controllers/topics.controllers')
-const {getArticleById,getArticles,patchArticleById} = require('./controllers/articles.controllers')
-const {getUsers} = require('./controllers/users.controllers')
-const {getCommentsByArticleId,patchCommentById,postCommentByArticleId,deleteCommentByCommentId} = require('./controllers/comments.controllers')
-const {getApi} = require('./controllers/api.controllers')
+const { getTopics, getTopicBySlug } = require('./controllers/topics.controllers')
+const { getArticleById, getArticles, patchArticleById } = require('./controllers/articles.controllers')
+const { getUsers } = require('./controllers/users.controllers')
+const { getCommentsByArticleId, patchCommentById, postCommentByArticleId, deleteCommentByCommentId } = require('./controllers/comments.controllers')
+const { getApi } = require('./controllers/api.controllers')
 
 const cors = require('cors');
 

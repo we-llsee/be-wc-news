@@ -1,7 +1,7 @@
-const models=require('../models/models.js')
+const { fetchUsers } = require('../models/users.models')
 
 exports.getUsers=(req,res,next) => {
-    models.fetchUsers().then((users)=> {
+    fetchUsers().then((users)=> {
         return res.status(200).send({users})
     });
 }
