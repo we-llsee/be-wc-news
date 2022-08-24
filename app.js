@@ -1,29 +1,31 @@
 const express=require('express');
 const app = express();
-const controllers = require('./controllers/controllers.js');
-const cors = require('cors');
+const {getTopics,getTopicBySlug} = require('./controllers/topics.controllers')
+const {getArticleById,getArticles,patchArticleById} = require('./controllers/articles.controllers')
+const {getUsers} = require('./controllers/users.controllers')
+const {getCommentsByArticleId,patchCommentById,postCommentByArticleId,deleteCommentByCommentId} = require('./controllers/comments.controllers')
+const {getApi} = require('./controllers/api.controllers')
 
-// const apiRouter= require('./api-router')
-// app.use('/api',apiRouter);
+const cors = require('cors');
 
 app.use(cors());
 
 app.use(express.json());
 
-app.get('/api/topics',controllers.getTopics);
-app.get('/api/articles/:article_id',controllers.getArticleById);
-app.get('/api/users',controllers.getUsers);
-app.get('/api/articles/:article_id/comments',controllers.getCommentsByArticleId)
-app.get('/api/articles',controllers.getArticles);
-app.get('/api',controllers.getApi)
-app.get('/api/topics/:slug',controllers.getTopicBySlug)
+app.get('/api/topics',getTopics);
+app.get('/api/articles/:article_id',getArticleById);
+app.get('/api/users',getUsers);
+app.get('/api/articles/:article_id/comments',getCommentsByArticleId)
+app.get('/api/articles',getArticles);
+app.get('/api',getApi)
+app.get('/api/topics/:slug',getTopicBySlug)
 
-app.patch('/api/articles/:article_id',controllers.patchArticleById);
-app.patch('/api/comments/:comment_id',controllers.patchCommentById);
+app.patch('/api/articles/:article_id',patchArticleById);
+app.patch('/api/comments/:comment_id',patchCommentById);
 
-app.post('/api/articles/:article_id/comments',controllers.postCommentByArticleId)
+app.post('/api/articles/:article_id/comments',postCommentByArticleId)
 
-app.delete('/api/comments/:comment_id',controllers.deleteCommentByCommentId)
+app.delete('/api/comments/:comment_id',deleteCommentByCommentId)
 
 app.use((err,req,res,next)=>{
 
