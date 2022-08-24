@@ -1,5 +1,4 @@
 const app= require('../app.js');
-const apiRouter=require('../api-router')
 const request=require('supertest')
 const db= require('../db/connection.js')
 const testData=require('../db/data/test-data/index.js');
