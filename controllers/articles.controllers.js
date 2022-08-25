@@ -11,22 +11,11 @@ exports.getArticleById=(req,res,next) => {
 
 };
 
-//TODO move this work to the model
 exports.patchArticleById=(req,res,next) =>{
     const {article_id} =req.params;
     const {inc_votes} = req.body;
-    
-    return Promise.resolve().then(()=>{
-        if(Number.isNaN(+article_id)){
-            return Promise.reject({status:400, msg:'Invalid article_id'})
-        }  
-        
-        if(Number.isInteger(+inc_votes)===false){
-            return Promise.reject({status:400, msg:'Invalid PATCH body'})
-        }
-    }).then(()=>{
-        return updateArticleById(inc_votes,article_id)
-    }).then(({rows:[article]})=>{
+      
+    return updateArticleById(inc_votes,article_id).then(({rows:[article]})=>{
         return res.status(200).send({article});
     }).catch((err) => next(err))
    

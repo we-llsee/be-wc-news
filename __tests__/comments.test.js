@@ -82,7 +82,6 @@ const commentsTests=()=>{
             }).then(()=>{
                 return request(app).patch('/api/comments/1').send({inc_votes:1})
             }).then(({body})=>{
-                console.log(body)
                 expect(body).toEqual(expect.objectContaining(
                     {comment: {article_id: beforePatch.article_id,
                     author:beforePatch.author,
