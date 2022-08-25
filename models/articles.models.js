@@ -3,7 +3,7 @@ const format = require('pg-format')
 const db = require('../db/connection.js');
 const { checkDbColumnExists } = require('../utils/models.utils')
 const { fetchTopicBySlug } = require('./topics.models')
-const { isPositiveInt, isInt } = require('../utils/data-validation')
+const { isPositiveInt, isInt, isValidOrder } = require('../utils/data-validation')
 
 exports.fetchArticleById = (article_id) => {
     const formattedQuery=format(`SELECT articles.*, COUNT(comments.comment_id) AS comment_count FROM articles
@@ -31,9 +31,10 @@ exports.updateArticleById = (inc_votes,article_id) => {
     inc_votes=parseInt(inc_votes)
     article_id=parseInt(article_id)
 
-    return isPositiveInt(article_id,'article_id','parameter').then(()=>{
-        return isInt(inc_votes,'inc_votes','property in PATCH body')
-    }).then(()=>{
+    return Promise.all([
+        isPositiveInt(article_id,'article_id','parameter'),
+        isInt(inc_votes,'inc_votes','property in PATCH body')
+    ]).then(()=>{
         return db.query('UPDATE articles SET votes=votes+$1 WHERE article_id=$2 RETURNING *',[inc_votes,article_id])
     }).then((result)=>{
         if(!result.rows[0]) {
@@ -56,24 +57,20 @@ exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%',limit=10,page
         ORDER BY articles.%I %s
         LIMIT %s OFFSET %L`,topic,sort_by,order,limit,offset);
     }
-    //TODO promise.all this?
-    return fetchTopicBySlug(topic).then(()=>{
-        return checkDbColumnExists('articles',sort_by)
-    }).then(()=>{
-        limit= parseInt(limit)
-        return isPositiveInt(limit,'limit','query')
-    }).then(()=>{
-        page= parseInt(page)
-        return isPositiveInt(page,'page','query')
-    }).then(()=>{
-        order=order.toUpperCase();
-        if(order!== 'ASC' && order!=='DESC'){
-            return Promise.reject({status:400,msg:'Invalid order'})
-        }
-    }).then(()=>{
+    limit= parseInt(limit)
+    page= parseInt(page)
+    order=order.toUpperCase();
+
+    return Promise.all([
+        fetchTopicBySlug(topic),
+        checkDbColumnExists('articles',sort_by),
+        isPositiveInt(limit,'limit','query'),
+        isPositiveInt(page,'page','query'),
+        isValidOrder(order,'order','query')
+    ]).then(()=>{
         //TODO check fully sanitised
         return db.query(buildArticlesQuery(sort_by,order,topic,"ALL",0))
-}).then((res)=>{
+    }).then((res)=>{
         total_count= res.rowCount
         let offset= (page-1) * limit
         return db.query(buildArticlesQuery(sort_by,order,topic,limit,offset))

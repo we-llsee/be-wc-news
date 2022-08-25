@@ -6,10 +6,11 @@ exports.fetchTopics=(limit=10,page=1) =>{
 
     limit=parseInt(limit)
     page=parseInt(page)
-    
-    return isPositiveInt(limit,'limit','query').then(()=>{
-        return isPositiveInt(page,'page','query')
-    }).then(()=>{
+
+    return Promise.all([
+        isPositiveInt(limit,'limit','query'),
+        isPositiveInt(page,'page','query')
+    ]).then(()=>{
         const formattedQuery=format(`SELECT * FROM topics LIMIT %L OFFSET %L`,limit,(page-1)*limit)
         return db.query(formattedQuery)
     }).then(({rows}) => {

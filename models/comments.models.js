@@ -14,11 +14,13 @@ exports.fetchCommentsByArticleId=(article_id,limit=10,page=1)=>{
 
     page= parseInt(page)
     limit= parseInt(limit)
-    return isPositiveInt(page,'page','query').then(()=>{
-        return isPositiveInt(limit,'limit','query')
-    }).then(()=>{
-        return fetchArticleById(article_id)
-    }).then(()=>{
+
+    return Promise.all([
+        isPositiveInt(page,'page','query'),
+        isPositiveInt(limit,'limit','query'),
+        fetchArticleById(article_id),
+
+    ]).then(()=>{
         return db.query(formattedQuery)
     .then(({rows})=> {
         return rows
@@ -30,13 +32,12 @@ exports.addCommentByArticleId=(article_id,comment)=>{
     const formattedQuery=format(`INSERT INTO comments
     (body,article_id,author) VALUES %L RETURNING *`,[[comment.body,article_id,comment.username]]);
 
-    return isString(comment.body,'body','property in POST body').then(()=>{
-        return fetchArticleById(article_id)
-    }).then(()=>{
-        return isString(comment.username,'username','property in POST body')
-    }).then(()=>{
-        return fetchUserByUsername(comment.username);
-    }).then(()=>{
+    return Promise.all([
+        isString(comment.body,'body','property in POST body'),
+        fetchArticleById(article_id),
+        isString(comment.username,'username','property in POST body'),
+        fetchUserByUsername(comment.username)
+    ]).then(()=>{
         return db.query(formattedQuery)
     }).then(({rows})=> {
         return rows
@@ -72,10 +73,11 @@ exports.updateCommentById=(comment_id,inc_votes=0)=>{
     comment_id=parseInt(comment_id)
     inc_votes=parseInt(inc_votes)
 
-    return isInt(inc_votes,'inc_votes','property in PATCH body').then(()=>{
-        return this.getCommentById(comment_id)
-    }).then(()=>{
-
+    return Promise.all([
+        isInt(inc_votes,'inc_votes','property in PATCH body'),
+        this.getCommentById(comment_id)
+    ]).then(()=>{
+        
         const formattedQuery=format(`UPDATE comments 
         SET votes=votes+%L
         WHERE comment_id=%L
