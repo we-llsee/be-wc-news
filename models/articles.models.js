@@ -2,7 +2,7 @@ const format = require('pg-format')
 
 const db = require('../db/connection.js');
 const { checkDbColumnExists } = require('../utils/models.utils')
-const { checkTopicExists } = require('./topics.models')
+const { fetchTopicBySlug } = require('./topics.models')
 const { isPositiveInt, isInt } = require('../utils/data-validation')
 
 exports.fetchArticleById = (article_id) => {
@@ -57,7 +57,7 @@ exports.fetchArticles=(sort_by='created_at',order='DESC',topic='%',limit=10,page
         LIMIT %s OFFSET %L`,topic,sort_by,order,limit,offset);
     }
     //TODO promise.all this?
-    return checkTopicExists(topic).then(()=>{
+    return fetchTopicBySlug(topic).then(()=>{
         return checkDbColumnExists('articles',sort_by)
     }).then(()=>{
         limit= parseInt(limit)

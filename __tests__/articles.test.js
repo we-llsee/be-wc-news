@@ -319,7 +319,7 @@ const articlesTests=()=>{
 
         it('404: GET /api/articles?topic=notatopic returns "Non-existent topic"',() => {
             return request(app).get('/api/articles?topic=notatopic').expect(404).then(({body})=>{
-                expect(body).toEqual({msg:'Non-existent topic'})
+                expect(body).toEqual({msg:'No topic exists with specified slug'})
             })
         });
 
