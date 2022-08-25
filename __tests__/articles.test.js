@@ -313,7 +313,7 @@ const articlesTests=()=>{
 
         it('400: GET /api/articles?order=alphabetical returns "Invalid order"',() => {
             return request(app).get('/api/articles?order=alphabetical').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid order'})
+                expect(body).toEqual({msg:"Invalid 'order' query - neither ASC or DESC"})
             })
         });
 

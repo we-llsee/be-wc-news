@@ -27,3 +27,13 @@ exports.isInt=(value,field,detail='')=>{
     if(detail!=="") detail += " ";
     return Promise.reject({status:400,msg:`Invalid '${field}' ${detail}- not an integer`})
 }
+
+exports.isValidOrder=(value,field,detail='')=>{
+
+    if(value==='ASC' || value==='DESC'){
+        return Promise.resolve();
+    } 
+
+    if(detail!=="") detail += " ";
+    return Promise.reject({status:400,msg:`Invalid '${field}' ${detail}- neither ASC or DESC`})
+}
