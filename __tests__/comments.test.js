@@ -32,7 +32,7 @@ const commentsTests=()=>{
 
         it('400: /api/comments/mikescomment returns "Invalid comment_id"',() => {
             return request(app).delete('/api/comments/mikescomment').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid comment_id'})
+                expect(body).toEqual({msg:"Invalid 'comment_id' parameter - not a positive integer"})
             })
         });
 
@@ -95,13 +95,13 @@ const commentsTests=()=>{
         
         it('400 /api/comments/thirty invalid comment_id returns {msg: Invalid comment_id}',()=>{
             return request(app).patch('/api/comments/thirty').send({inc_votes:1}).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid comment_id'})
+                expect(body).toEqual({msg:"Invalid 'comment_id' parameter - not a positive integer"})
             })
         })
 
         it('400 /api/comments/1  invalid PATCH body {inc_votes:ten} returns {msg: Invalid PATCH body}',()=>{
             return request(app).patch('/api/comments/1').send({inc_votes:'ten'}).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid PATCH body'})
+                expect(body).toEqual({msg:"Invalid 'inc_votes' property in PATCH body - not an integer"})
             })
         })
 

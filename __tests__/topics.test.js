@@ -137,25 +137,25 @@ const topicsTests=()=>{
 
         it('400 /api/topics?limit=duck returns {msg: Invalid limit query}',()=>{
             return request(app).get('/api/topics?limit=duck').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid limit query'})
+                expect(body).toEqual({msg:"Invalid 'limit' query - not a positive integer"})
             })
         })
 
         it('400 /api/topics?limit=eight returns {msg: Invalid limit query}',()=>{
             return request(app).get('/api/topics?limit=eight').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid limit query'})
+                expect(body).toEqual({msg:"Invalid 'limit' query - not a positive integer"})
             })
         })
 
         it('400 /api/topics?p=tiger returns {mgs: Invalid page query}',()=>{
             return request(app).get('/api/topics?p=tiger').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid page query'})
+                expect(body).toEqual({msg:"Invalid 'page' query - not a positive integer"})
             });
         })
 
         it('400 /api/topics?p=-4 returns {mgs: Invalid page query}',()=>{
             return request(app).get('/api/topics?p=-4').expect(400).then(({body})=>{
-              expect(body).toEqual({msg:'Invalid page query'})
+              expect(body).toEqual({msg:"Invalid 'page' query - not a positive integer"})
             }).then(()=>{
                 return seed(testData)
             })
