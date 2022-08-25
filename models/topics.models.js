@@ -17,21 +17,9 @@ exports.fetchTopics=(limit=10,page=1) =>{
     });
 };
 
-//TODO remove this function - duplicated work
-exports.checkTopicExists=(topic) =>{
-    const formattedQuery=format(`SELECT * FROM topics WHERE topics.slug LIKE %L`,topic)
-
-    return db.query(formattedQuery).then(({rows}) => {
-        if(rows.length===0){
-            return Promise.reject({status:404,msg:"Non-existent topic"})
-        }
-        return rows;
-    })
-}
-
 exports.fetchTopicBySlug=(slug)=>{
 
-    const formattedQuery= format('SELECT * FROM topics WHERE topics.slug=%L',slug)
+    const formattedQuery= format('SELECT * FROM topics WHERE topics.slug LIKE %L',slug)
 
     return db.query(formattedQuery).then(({rows,rowCount})=>{
         if(rowCount===0){
