@@ -112,26 +112,24 @@ const articlesTests=()=>{
         });
 
         it('400: Empty PATCH body returns an "Invalid PATCH body" error',() => {
-            return request(app).patch('/api/articles/1').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid PATCH body'});
-            })
+            return request(app).patch('/api/articles/1').expect(400)
         });
 
         it('400: inc_votes key in PATCH body has an invalid value',() => {
             return request(app).patch('/api/articles/1').send({inc_votes:'cat'}).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid PATCH body'});
+                expect(body).toEqual({msg:"Invalid 'inc_votes' property in PATCH body - not an integer"});
             })
         });
 
         it('400: inc_votes key in PATCH body has no value',() => {
             return request(app).patch('/api/articles/1').send({inc_votes:undefined}).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid PATCH body'});
+                expect(body).toEqual({msg:"Invalid 'inc_votes' property in PATCH body - not an integer"});
             })
         })
         
         it('400: invalid article_id',() => {
             return request(app).patch('/api/articles/x').send({inc_votes:1}).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:"Invalid article_id"});
+                expect(body).toEqual({msg:"Invalid 'article_id' parameter - not a positive integer"});
             })
         })
         
