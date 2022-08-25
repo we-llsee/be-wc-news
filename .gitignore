@@ -1,4 +1,5 @@
 node_modules
+*.txt
 *.env
 db/test.sql
 db/test-output.txt

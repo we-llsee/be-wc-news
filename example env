@@ -1,1 +1,5 @@
-PGDATABASE=insert_database_name
+PGHOST=127.0.0.1
+PGPORT=5433
+PGUSER=psql
+PGPASSWORD=postgrespw
+PGDATABASE=wc_news
