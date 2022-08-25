@@ -1,21 +1,18 @@
 const db = require('../db/connection.js');
 const format = require('pg-format')
+const { isPositiveInt } = require('../utils/data-validation');
 
 exports.fetchTopics=(limit=10,page=1) =>{
 
     limit=parseInt(limit)
-    if(!Number.isInteger(limit) || limit<1){
-        return Promise.reject({status:400,msg:'Invalid limit query'})
-    }
-
     page=parseInt(page)
-    if(!Number.isInteger(page) || page<1){
-        return Promise.reject({status:400,msg:'Invalid page query'})
-    }
-
-    const formattedQuery=format(`SELECT * FROM topics LIMIT %L OFFSET %L`,limit,(page-1)*limit)
     
-    return db.query(formattedQuery).then(({rows}) => {
+    return isPositiveInt(limit,'limit','query').then(()=>{
+        return isPositiveInt(page,'page','query')
+    }).then(()=>{
+        const formattedQuery=format(`SELECT * FROM topics LIMIT %L OFFSET %L`,limit,(page-1)*limit)
+        return db.query(formattedQuery)
+    }).then(({rows}) => {
         return rows;
     });
 };

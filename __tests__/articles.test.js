@@ -50,7 +50,7 @@ const articlesTests=()=>{
 
         it('400: /api/articles/abc returns {msg:"Invalid article_id"}',() => {
             return request(app).get('/api/articles/abc').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:"Invalid article_id"});
+                expect(body).toEqual({msg:"Invalid 'article_id' parameter - not a positive integer"});
             });
         });
 
@@ -131,7 +131,7 @@ const articlesTests=()=>{
         
         it('400: invalid article_id',() => {
             return request(app).patch('/api/articles/x').send({inc_votes:1}).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid article_id'});
+                expect(body).toEqual({msg:"Invalid article_id"});
             })
         })
         
@@ -197,7 +197,7 @@ const articlesTests=()=>{
 
         it('400: /api/articles/cat/comments returns {msg:Invalid article_id}',() => {
             return request(app).get('/api/articles/cat/comments').expect(400).then(({body})=>{
-                return expect(body).toEqual({msg:'Invalid article_id'})
+                return expect(body).toEqual({msg:"Invalid 'article_id' parameter - not a positive integer"})
             })
         });
 
@@ -388,7 +388,7 @@ const articlesTests=()=>{
             }
             
             return request(app).post('/api/articles/cat/comments').send(postContent).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid article_id'})
+                expect(body).toEqual({msg:"Invalid 'article_id' parameter - not a positive integer"})
             });
         });
 
@@ -399,7 +399,7 @@ const articlesTests=()=>{
             }
             
             return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid POST body'})
+                expect(body).toEqual({msg:"Invalid 'username' property in POST body - not a string"})
             });
         });
 
@@ -410,16 +410,14 @@ const articlesTests=()=>{
             }
             
             return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid POST body'})
+                expect(body).toEqual({msg:"Invalid 'body' property in POST body - not a string"})
             });
         });
 
         it('400: /api/articles/cat/comments PATCH body is empty is invalid',() => {
             let postContent={}
             
-            return request(app).post('/api/articles/1/comments').send(postContent).expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid POST body'})
-            });
+            return request(app).post('/api/articles/1/comments').send(postContent).expect(400)
         });
 
         it('404: /api/articles/66666/comments article_id is non-existent',() => {
@@ -557,25 +555,25 @@ const articlesTests=()=>{
 
         it('400: /api/articles/?limit=-4 returns {msg: Invalid limit query}',()=>{
             return request(app).get('/api/articles/?limit=-4').expect(400).then(({body})=>{
-                expect(body).toEqual({msg: 'Invalid limit query'})
+                expect(body).toEqual({msg: "Invalid 'limit' query - not a positive integer"})
             })
         })
 
         it('400: /api/articles/?limit=cat returns {msg: Invalid limit query}',()=>{
             return request(app).get('/api/articles/?limit=cat').expect(400).then(({body})=>{
-                expect(body).toEqual({msg: 'Invalid limit query'})
+                expect(body).toEqual({msg: "Invalid 'limit' query - not a positive integer"})
             })
         })
 
         it('400: /api/articles/?limit=5&p=dog returns {msg: Invalid page query}',()=>{
             return request(app).get('/api/articles/?limit=5&p=dog').expect(400).then(({body})=>{
-                expect(body).toEqual({msg: 'Invalid page query'})
+                expect(body).toEqual({msg: "Invalid 'page' query - not a positive integer"})
             })
         })
 
         it('400: /api/articles/?limit=5&p=-2 returns {msg: Invalid page query}',()=>{
             return request(app).get('/api/articles/?limit=5&p=-2').expect(400).then(({body})=>{
-                expect(body).toEqual({msg: 'Invalid page query'})
+                expect(body).toEqual({msg: "Invalid 'page' query - not a positive integer"})
             })
         })
     });
@@ -669,25 +667,25 @@ const articlesTests=()=>{
 
         it('400: /api/articles/1/comments?limit=5&p=three returns {msg: Invalid page query}',()=>{
             return request(app).get('/api/articles/1/comments?limit=5&p=three').expect(400).then(({body})=>{
-                expect(body).toEqual({msg: 'Invalid page query'})
+                expect(body).toEqual({msg: "Invalid 'page' query - not a positive integer"})
             })
         })
 
         it('400: /api/articles/1/comments?limit=5&p=-1 returns {msg: Invalid page query}',()=>{
             return request(app).get('/api/articles/1/comments?limit=5&p=-1').expect(400).then(({body})=>{
-                expect(body).toEqual({msg: 'Invalid page query'})
+                expect(body).toEqual({msg: "Invalid 'page' query - not a positive integer"})
             })
         })
 
         it('400: /api/articles/1/comments?limit=five returns {msg: Invalid limit query}',()=>{
             return request(app).get('/api/articles/1/comments?limit=five').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid limit query'})
+                expect(body).toEqual({msg:"Invalid 'limit' query - not a positive integer"})
             })
         })
 
         it('400: /api/articles/1/comments?limit=-6 returns {msg: Invalid limit query}',()=>{
             return request(app).get('/api/articles/1/comments?limit=-6').expect(400).then(({body})=>{
-                expect(body).toEqual({msg:'Invalid limit query'})
+                expect(body).toEqual({msg:"Invalid 'limit' query - not a positive integer"})
             })
         })
     })

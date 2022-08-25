@@ -11,6 +11,7 @@ exports.getArticleById=(req,res,next) => {
 
 };
 
+//TODO move this work to the model
 exports.patchArticleById=(req,res,next) =>{
     const {article_id} =req.params;
     const {inc_votes} = req.body;
